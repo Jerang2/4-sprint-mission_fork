@@ -6,22 +6,30 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+//import router
+const productRouter = require('./rotes/products.router.js');
+const articleRouter = require('./routes/articles.router,js');
+
+//Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static(path,join(__dirname, 'uploads')));
 
-// Basic route
-app.get('/', (req, res) => {
-  res.send('Hello, Sprint Mission 3 API!');
-});
 
-// Global Error Handler Middleware (placeholder for now)
+//route setitng
+app.use('/api', [productRouter, articleRouter]);
+
+//Error Handler Middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).send('Something broke!');
+  const statusCode = err.statusCode || 500;
+  const message = err.message || '오류가 발생했스빈다.';
+  res.status(statusCode).json({ message });
 });
 
-// Start the server
+
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`서버가 ${PORT}번에서 실행중입니다.`);
 });
+
