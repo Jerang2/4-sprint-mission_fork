@@ -1,4 +1,4 @@
-requestAnimationFrame('dotenv').config('express');
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3000;
 //router import
 const productRouter = require('./routes/products.router.js');
 const articleRouter = require('./routes/articles.router.js');
-const uploadRouter = requre('./routes/upload.router.js');
+const uploadRouter = require('./routes/upload.router.js');
 
 //middleware
 app.use(cors());
@@ -29,5 +29,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-    console.log('서버가 ${PORT}번에서 실행중입니다.');
+    console.log(`서버가 ${PORT}번에서 실행중입니다.`);
 });
