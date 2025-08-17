@@ -24,7 +24,7 @@ app.use('/api', [productRouter, articleRouter]);
 app.use((err, req, res, next) => {
   console.error(err.stack);
   const statusCode = err.statusCode || 500;
-  const message = err.message || '오류가 발생했스빈다.';
+  const message = err.message || '오류가 발생했습니다.';
   res.status(statusCode).json({ message });
 });
 
