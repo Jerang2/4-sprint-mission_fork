@@ -1,7 +1,7 @@
 //validation
 const validateProduct = (req, res, next) => {
     const { name, description, price } = req.body;
-    if (!name || !description || price = null) {
+    if (!name || !description || price == null) {
         return res.status(400).json({ message: '이름, 설명, 가격을 입력해야 합니다.'});
     }
     if (typeof price !== 'number' || price <= 0) {
