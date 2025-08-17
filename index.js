@@ -18,7 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path,join(__dirname, 'uploads')));
 
 
-//route setitng
+//route settitng
 app.use('/api', [productRouter, articleRouter, uploadRouter]);
 
 //Error Handler Middleware
