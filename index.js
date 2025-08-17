@@ -9,6 +9,7 @@ const PORT = process.env.PORT || 3000;
 //import router
 const productRouter = require('./rotes/products.router.js');
 const articleRouter = require('./routes/articles.router,js');
+const uploadRouter = require('./routes.upload.router.js');
 
 //Middleware
 app.use(cors());
@@ -18,7 +19,7 @@ app.use('/uploads', express.static(path,join(__dirname, 'uploads')));
 
 
 //route setitng
-app.use('/api', [productRouter, articleRouter]);
+app.use('/api', [productRouter, articleRouter, uploadRouter]);
 
 //Error Handler Middleware
 app.use((err, req, res, next) => {
