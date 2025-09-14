@@ -1,7 +1,10 @@
 const express = require('express');
 const UserService = require('../UserService.js');
+const authMiddleware = require('../middlewares/auth.middleware.js');
+const { PrismaClient } = require('@prisma/client');
 
 const router = express.Router();
+const prisma = new PrismaClient();
 const userService = new UserService();
 
 // 회원가입 API
@@ -42,6 +45,64 @@ router.post('/sign-in', async (req, res, next) => {
         } catch (error) {
             return res.status(401).json({ message: Error.message });
         }
+});
+
+// 내 정보 조회 API
+router.get('/me', authMiddleware, async (req, res, next) => {
+    try {
+        const { user } = req;
+
+        res.status(200).json({
+            message: '내 정보 조회 성공',
+            data: {
+                id: user.id,
+                email: user.email,
+                nickname: user.nickname,
+                image: user.image,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt,
+            },
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// 내 정보 수정 API
+router.patch('/me', authMiddleware, async (req, res, next) => {
+    try {
+        const { nickname, image } = req.body;
+        const { user } = req;
+
+        if (!nickname && !image) {
+            return res.status(400).json({ message: '수정할 내용을 입력해주세요.' });
+        }
+
+        // 수정할 사용자 정보
+        const updatedData = {
+            ...(nickname && { nickname }),
+            ...(image && { image }),
+        };
+
+        const updatedUser = await prisma.user.update({
+            where: { id: user.id },
+            data: updatedData,
+        });
+
+        res.status(200).json({
+            message: '내 정보 수정에 성공했습니다.',
+            data: {
+                id: updatedUser.id,
+                email: updatedUser.email,
+                nickname: updatedUser.nickname,
+                image: updatedUser.image,
+                createdAt: updatedUser.createdAt,
+                updatedAt: updatedUser.updatedAt,
+            },
+        });
+    } catch (error) {
+        next(error);
+    }
 });
 
 module.exports = router; 
