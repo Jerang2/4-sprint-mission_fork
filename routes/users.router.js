@@ -2,6 +2,7 @@ const express = require('express');
 const UserService = require('../UserService.js');
 const authMiddleware = require('../middlewares/auth.middleware.js');
 const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcrypt');
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -103,6 +104,40 @@ router.patch('/me', authMiddleware, async (req, res, next) => {
     } catch (error) {
         next(error);
     }
+});
+
+// 비밀번호 변경 API
+router.patch('/me/password', authMiddleware, async (req, res, next) => {
+    try {
+        const { currentPassword, newPassword, confirmNewPassword } = req.body;
+        const { user } = req;
+
+        if (!currentPassword || !newPassword || !confirmNewPassword) {
+            return res.status(400).json({ message: '모든 정보를 입력해주세요.' });
+        }
+        if (newPassword !== confirmNewPassword) {
+            return res.status(400).json({ message: '새 비밀번호와 확인 비밀번호가 일치하지 않습니다.' });
+        }
+        
+
+    // 현재 비밀번호 확인
+    const isPasswordMatched = await bcrypt.compare(currentPassword, user.password);
+    if (!isPasswordMatched) {
+        return res.status(401).json({ message: '현재 비밀번호가 일치하지 않습니다.' });
+    }
+
+    // 새 비밀번호 해싱
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+        where: { id: user.id },
+        data: { password: hashedNewPassword },
+    });
+
+    res.status(200).json({ message: '비밀번호 변경이 완료되었습니다.' });
+  } catch (error) {
+    next(error);
+  }
 });
 
 module.exports = router; 
