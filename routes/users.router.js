@@ -1,5 +1,5 @@
-import express from 'express';
-import { UserService } from '../UserService.js';
+const express = require('express');
+const UserService = require('../UserService.js');
 
 const router = express.Router();
 const userService = new UserService();
@@ -25,4 +25,4 @@ router.post('/sign-up', async (req, res, next) => {
     }
 });
 
-export default router;
+module.exports = router; 

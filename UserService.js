@@ -1,7 +1,7 @@
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
+const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcrypt');
 
-export class UserService {    
+class UserService {    
     prisma = new PrismaClient();
 
     // 회원가입 로직
@@ -30,3 +30,5 @@ export class UserService {
         return userWithoutPassword;
     };
 }
+
+module.pxports = UserService;
