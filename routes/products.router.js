@@ -27,7 +27,7 @@ router.post('/products', authMiddleware, validateProduct, async (req, res, next)
 })
 
 // cherck router
-router.get('/products', async (req, res, next) => {
+router.get('/products', optionalAuthMiddleware, async (req, res, next) => {
     try {
         const { sort, search } = req.query;
         let page = parseInt(req.query.page) || 1;
@@ -43,6 +43,8 @@ router.get('/products', async (req, res, next) => {
             ],
         }
         : {};
+
+        const user = req.user;
         const products = await prisma.product.findMany({
             where,
             select: { id: true, name: true, price: true, createdAt: true, userId: true },
@@ -50,7 +52,37 @@ router.get('/products', async (req, res, next) => {
             skip: offset,
             take: limit,
         });
-        res.status(200).json(products);
+
+        let responseProducts = products;
+
+        if (user) {
+            // 로그인한 사용자의 좋아요 누른 상품 목록 조회
+            const productIds = products.map(product => product.id);
+            const likes = await prisma.like.findMany({
+                where: {
+                    userId: user.id,
+                    productId: { in: productIds },
+                },
+            });
+
+            const likedProductIds = new Set(likes.map(like => like.productId));
+
+            // 각 상품에 isLiked 필드 추가
+            responseProducts = products.map(product => ({
+                ...product,
+                isLiked: likedProductIds.has(product.id),
+            }));
+        } else {
+
+            // 로그인 하지 않은 사용자의 경우 모든 isLiked = false
+            responseProducts = products.map(product => ({
+                ...product,
+                isLiked: false,
+            }));
+        }
+
+        res.status(200).json(responseProducts);
+        
     }   catch (error) {
         next(error);
     }
