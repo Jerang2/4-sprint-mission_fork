@@ -27,8 +27,8 @@ router
         const where = search
           ? {
             OR: [
-                { title: { contains: search, mode: 'insenstive' }},
-                { content: { constains: search, mode: 'insenstive' }},
+                { title: { contains: search, mode: 'insensitive' }},
+                { content: { constains: search, mode: 'insensitive' }},
             ],
           }
           : {};
@@ -126,7 +126,7 @@ router.get('/articles/:articleId/comments', async (req, res, next) => {
 });
 
 //article modify
-router.patcch('/articles/comments/:commentId', async (req, res, next) => {
+router.patch('/articles/comments/:commentId', async (req, res, next) => {
     try {
         const { commentId } = req.params;
         const { content } = req.body;
@@ -147,7 +147,7 @@ router.patcch('/articles/comments/:commentId', async (req, res, next) => {
 router.delete('/articles/comments/:commentId', async (req, res, next) => {
     try {
         const { commentId } = req.params;
-        await prisma.articleComment.delete({ where: { id: parseInt(commetId) }});
+        await prisma.articleComment.delete({ where: { id: parseInt(commentId) }});
         res.status(204).send();
     }   catch (error) {
         next(error);

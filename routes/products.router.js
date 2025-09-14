@@ -19,7 +19,7 @@ router.post('/products', validateProduct, async (req, res, next) => {
 })
 
 //cherck router
-router.ger('/products', async (req, res, next) => {
+router.get('/products', async (req, res, next) => {
     try {
         const { sort, search } = req.query;
         let page = parseInt(req.query.page) || 1;
@@ -30,14 +30,14 @@ router.ger('/products', async (req, res, next) => {
         ? {
             OR: [
                 { name: { contains: search, mode: 'insensitive' }},
-                { description: { contains: search, mode: 'insentive'
+                { description: { contains: search, mode: 'insensitive'
                 } },
             ],
         }
         : {};
         const products = await prisma.product.findMany({
             where,
-            select: { id: true, name: true, price: true, createdAt: true, imageUrl: true },
+            select: { id: true, name: true, price: true, createdAt: true },
             orderBy: sort === 'recent' ? { createdAt: 'desc' } : undefined,
             skip: offset,
             take: limit,
@@ -57,7 +57,7 @@ router
         const product = await prisma.product.findUnique({
             where: { id: parseInt(productId) },
             select: { id: true, name: true, description: true, price: true,
-                 tags: true, createdAt: true, imageUrl: true },
+                 tags: true, createdAt: true },
             });
             if (!product) return res.status(404).json({ message: '상품을 찾을수 없습니다.'});
             res.status(200).json(product);
@@ -67,10 +67,10 @@ router
         })
         .patch(validateProduct, async (req, res, next) => {
             try {
-                const { productid } = req.params;
+                const { productId } = req.params;
                 const { name, description, price, tags } = req.body;
                 const updatedProduct = await prisma.product.update({
-                    where: { id: parseInt(productID) },
+                    where: { id: parseInt(productId) },
                     data: { name, description, price, tags },
                 });
                 res.status(200).json(updatedProduct);
@@ -112,7 +112,7 @@ router.get('/products/:productId/comments', async (req, res, next) => {
     try {
         const { productId } = req.params;
         let cursor = req.query.cursor ? parseInt(req.query.cursor): undefined;
-        let limit = parseInt(req.query,limit) || 10;
+        let limit = parseInt(req.query.limit) || 10;
 
         const comments = await prisma.productComment.findMany({
             where: { productId: parseInt(productId) },
@@ -138,7 +138,7 @@ router.patch('/products/comments/:commentId', async (req, res, next) => {
         const updatedComment = await prisma.productComment.update 
 ({
          where: { id: parseInt(commentId) },
-         data: { content },
+         data: { comment },
      });
         res.status(200).json(updatedComment);
     }   catch (error) {

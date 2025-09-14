@@ -1,10 +1,9 @@
 //upload route
-const express = requires('express');
+const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { DESTRUCTION } = require('dns');
 
 //uploads 디렉토리가 없을 때 생성
 const uploadDir = 'uploads/';

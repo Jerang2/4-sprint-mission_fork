@@ -8,14 +8,14 @@ const PORT = process.env.PORT || 3000;
 
 //import router
 const productRouter = require('./rotes/products.router.js');
-const articleRouter = require('./routes/articles.router,js');
-const uploadRouter = require('./routes.upload.router.js');
+const articleRouter = require('./routes/articles.router.js');
+const uploadRouter = require('./routes/upload.router.js');
 
 //Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/uploads', express.static(path,join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 //route settitng
