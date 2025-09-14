@@ -140,4 +140,23 @@ router.patch('/me/password', authMiddleware, async (req, res, next) => {
   }
 });
 
+// 내가 작성한 상품 목록 조회 API
+router.get('/me/products', authMiddleware, async (req, res, next) => {
+    try {
+        const { user } = req;
+
+        const products = await prisma.product.findMany({
+            where: { userId: user.id },
+            orderBy: { createdAt: 'desc' },
+        });
+
+        res.status(200).json({
+            message: '내가 작성한 상품 목록 조회에 성공했습니다.',
+            data: products,
+        });
+      } catch (error) {
+        next(error);
+      }
+});
+
 module.exports = router; 
