@@ -31,4 +31,4 @@ class UserService {
     };
 }
 
-module.pxports = UserService;
+module.exports = UserService;

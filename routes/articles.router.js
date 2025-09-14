@@ -126,7 +126,7 @@ router.get('/articles/:articleId/comments', async (req, res, next) => {
 });
 
 //article modify
-router.patcch('/articles/comments/:commentId', async (req, res, next) => {
+router.patch('/articles/comments/:commentId', async (req, res, next) => {
     try {
         const { commentId } = req.params;
         const { content } = req.body;

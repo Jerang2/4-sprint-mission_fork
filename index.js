@@ -7,7 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // import router
-const productRouter = require('./rotes/products.router.js');
+const productRouter = require('./routes/products.router.js');
 const articleRouter = require('./routes/articles.router.js');
 const uploadRouter = require('./routes/upload.router.js');
 const usersRouter = require('./routes/users.router.js');

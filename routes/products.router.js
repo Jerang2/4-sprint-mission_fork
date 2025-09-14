@@ -19,7 +19,7 @@ router.post('/products', validateProduct, async (req, res, next) => {
 })
 
 //cherck router
-router.ger('/products', async (req, res, next) => {
+router.get('/products', async (req, res, next) => {
     try {
         const { sort, search } = req.query;
         let page = parseInt(req.query.page) || 1;
