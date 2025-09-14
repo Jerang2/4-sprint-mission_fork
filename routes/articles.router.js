@@ -27,7 +27,7 @@ router
     }
 })
   // 게시글 목록 조회
- .get(async (req, res, next) => {
+ .get(optionalAuthMiddleware, async (req, res, next) => {
     try {
         const { sort, search } = req.query;
         let page = parseInt(req.query.page) || 1;
@@ -43,18 +43,44 @@ router
           }
           : {};
 
-          const articles = await prisma.article.findMany({
-            where,
-            select: { id: true, title: true, content: true, createdAt: true, userId: true },
-            orderBy: sort === 'recent' ? { createdAt: 'desc' } : undefined,
-            skip: offset,
-            take: limit,
-          });
-          res.status(200).json(articles);
-        } catch (error) {
-            next(error);
+        const user = req.user;
+        const articles = await prisma.article.findMany({
+        where,
+        select: { id: true, title: true, content: true, createdAt: true, userId: true },
+        orderBy: sort === 'recent' ? { createdAt: 'desc' } : undefined,
+        skip: offset,
+        take: limit,
+        });
+
+        let responseArticle = articles;
+
+        if (user) {
+        const articleIds = articles.map(article => article.id);
+        const likes = await prisma.like.findMany({
+            where: {
+                userId: user.id,
+                articleId: { in: articleIds },
+            },
+        });
+
+        const likedArticleIds = new Set(likes.map(like => like.articleId));
+
+        responseArticles = articles.map(article => ({
+            ...article,
+            isLiked: likedArticleIds.has(article.id),
+        }));
+        } else {
+        responseArticles = articles.map(article => ({
+            ...article,
+            isLiked: false,
+        }));
         }
-    });
+
+        res.status(200).json(responseArticles);
+    } catch (error) {
+        next(error);
+    }
+});
 
 // article detail, modify, delete
 router
