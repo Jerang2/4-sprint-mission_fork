@@ -25,4 +25,23 @@ router.post('/sign-up', async (req, res, next) => {
     }
 });
 
+// 로그인 API
+router.post('/sign-in', async (req, res, next) => {
+    try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({ message: '이메일과 비밀번호를 모두 입력해주세요.'});
+        }
+            const token = await userService.signIn(email, password);
+
+            return res.status(200).json({
+                message: '로그인에 성공했습니다.',
+                data: { token },
+            });
+        } catch (error) {
+            return res.status(401).json({ message: Error.message });
+        }
+});
+
 module.exports = router; 
