@@ -44,15 +44,27 @@ class UserService {
             throw new Error('비밀번호가 일치하지 않습니다.');
         }
 
-        // 로그인 성공시 JWT 생성
-        const token = jwt.sign(
+        // Access Token 생성 (12시간)
+        const accessToken = jwt.sign(
             { userId: user.id },
             process.env.JWT_SECRET_KEY,
             { expiresIn: '12h' }
         );
 
-        return token;
+        // Refresh Token 생성 (7일)
+        const refreshToken = jwt.sign(
+            {},
+            process.env.REFRESH_TOKEN_SECRET_KEY,
+            { expiresIn: '7d' }
+        );
+
+        // Refresh Token을 해싱해서 DB에 저장
+        await this.prisma.user.update({
+            where: { id: user.id },
+            data: { refreshToken: await bcrypt.hash(refreshToken, 10) },
+        });
+
+        return { accessToke, refreshToken };
     };
 }
-
 module.exports = UserService;

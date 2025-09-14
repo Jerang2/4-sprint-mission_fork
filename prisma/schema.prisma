@@ -65,17 +65,18 @@ model Like {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
-  password  String
-  nickname  String
-  image     String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  products  Product[]
-  articles  Article[]
-  comments  Comment[]
-  likes     Like[]
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  password     String
+  nickname     String
+  image        String?
+  refreshToken String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  products     Product[]
+  articles     Article[]
+  comments     Comment[]
+  likes        Like[]
 
   @@map("users")
 }
