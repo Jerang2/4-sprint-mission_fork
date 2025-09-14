@@ -4,6 +4,7 @@ const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { validationProduct, validateProduct } = require('../middlewares/validation.middleware.js');
+const authMiddleware = require('../middlewares/auth.middleware.js');
 
 // registration router
 router.post('/products', validateProduct, async (req, res, next) => {

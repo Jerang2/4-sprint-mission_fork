@@ -4,6 +4,7 @@ const router = express.Router();
 const { PrismaClient } =require('@prisma/client');
 const prisma = new PrismaClient();
 const { validateArticle } = require('../middlewares/validation.middleware.js');
+const authMiddleware = require('../middlewares/auth.middleware.js');
 
 //article registration 
 router
@@ -11,7 +12,12 @@ router
  .post(validateArticle, async (req, res, next) => {
     try {
         const { title, content } = req.body;
-        const article = await prisma.article.create({ data: { title, content }});
+        const article = await prisma.article.create({ data: { 
+            title,
+            content,
+            userId: user.id,
+        }
+    });
         res.status(201).json(article);
     }   catch (error) {
         next(error);
