@@ -197,14 +197,14 @@ router.delete('/products/comments/:commentId', authMiddleware, async (req, res, 
 });
 
 // 상품 좋아요 API
-router.post('/:priductId/like', authMiddleware, async (req, res, next) => {
+router.post('/:productId/like', authMiddleware, async (req, res, next) => {
     try {
         const { productId } = req.params;
         const { user } = req;
 
         // 상품 존재 확인
         const product = await prisma.product.findUnique({ where: { id: parseInt(productId) } });
-        if (productId) {
+        if (!product) {
             return res.status(404).json({ message: '상품을 찾을 수 없습니다.'});
     }
 
