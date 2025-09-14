@@ -5,6 +5,7 @@ const { PrismaClient } =require('@prisma/client');
 const prisma = new PrismaClient();
 const { validateArticle } = require('../middlewares/validation.middleware.js');
 const authMiddleware = require('../middlewares/auth.middleware.js');
+const optionalAuthMiddleware = require('../middlewares/optionalAuth.middleware.js');
 
 //article registration 
 router
@@ -58,19 +59,41 @@ router
 // article detail, modify, delete
 router
  .route('/articles/:articleId')
- .get(async (req, res, next) => {
+ .get(optionalAuthMiddleware, async (req, res, next) => {
     try {
         const { articleId } = req.params;
+        const user = req.user;
+
         const article = await prisma.article.findUnique({
             where: { id: parseInt(articleId) },
             select: { id: true, title: true, content: true, createdAt: true, userId: true },
         });
-        if (!article) return res.status(404).json({ message: '게시글을 찾을 수 없습니다.'});
-        res.status(200).json(article);
+
+        if (!article) {
+            return res.status(404).json({ message: '게시글을 찾을 수 없습니다.'});
+        }
+
+        let isLiked = false;
+        if (user) {
+            const like = await prisma.like.findFirst({
+                where: {
+                    articleId: article.id,
+                    userId: user.id,
+                },
+            });
+            if (like) {
+                isLiked = true;
+            }
+        }
+
+        const responseArticle = { ...article, isLiked };
+        res.status(200).json(responseArticle);
+
     }   catch (error) {
         next(error);
     }
 })
+
  .patch(authMiddleware, validateArticle, async (req, res, next) => {
     try {
         const { articleId } = req.params;

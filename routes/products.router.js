@@ -5,6 +5,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { validationProduct, validateProduct } = require('../middlewares/validation.middleware.js');
 const authMiddleware = require('../middlewares/auth.middleware.js');
+const optionalAuthMiddleware = require('../middlewares/optionalAuth.middleware.js');
 
 // registration router
 router.post('/products', authMiddleware, validateProduct, async (req, res, next) => {
@@ -58,20 +59,41 @@ router.get('/products', async (req, res, next) => {
 // datail, modify, delete
 router
  .route('/products/:productId')
- .get(async (req, res, next) => {
+ .get(optionalAuthMiddleware, async (req, res, next) => {
     try {
         const { productId } = req.params;
+        const user = req.user;
+
         const product = await prisma.product.findUnique({
             where: { id: parseInt(productId) },
             select: { id: true, name: true, description: true, price: true,
                 createdAt: true, userId: true },
             });
+
             if (!product) return res.status(404).json({ message: '상품을 찾을수 없습니다.'});
-            res.status(200).json(product);
+            
+            let isLiked = false;
+            if (user) {
+                // 로그인한 경우 좋아요 여부 확인
+                const like = await prisma.like.findFirst({
+                    where: {
+                        productId: product.id,
+                        userId: user.id,
+                    },
+                });
+                if (like) {
+                    isLiked = true;
+                }
+            }
+
+            const responseProduct = { ...product, isLiked };
+            res.status(200).json(responseProduct);           
         }   catch (error) {
             next(error);
         }
-        })
+    })
+    
+
         .patch(validateProduct, authMiddleware, async (req, res, next) => {
             try {
                 const { productId } = req.params;
