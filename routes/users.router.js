@@ -37,14 +37,21 @@ router.post('/sign-in', async (req, res, next) => {
         if (!email || !password) {
             return res.status(400).json({ message: '이메일과 비밀번호를 모두 입력해주세요.'});
         }
-            const token = await userService.signIn(email, password);
+            const { accessToken, refreshToken } = await userService.signIn(email, password);
+
+            //refresh token을 쿠키에 설정
+            res.cookie('refreshToken', refreshToken, {
+                httpOnly: true,
+                secure: false,
+                maxAge: 1000 * 60 * 60 * 24 * 7,
+            });
 
             return res.status(200).json({
                 message: '로그인에 성공했습니다.',
-                data: { token },
+                data: { accessToken },
             });
         } catch (error) {
-            return res.status(401).json({ message: Error.message });
+            return res.status(401).json({ message: error.message });
         }
 });
 

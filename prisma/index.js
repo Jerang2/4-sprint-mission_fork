@@ -2,17 +2,18 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const cookieParser = require('cookie=parser');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-//router import
+// router import
 const productRouter = require('./routes/products.router.js');
 const articleRouter = require('./routes/articles.router.js');
 const uploadRouter = require('./routes/upload.router.js');
+const usersRouter = require('./routes/users.router.js');
 
-//middleware
+// middleware
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
@@ -20,7 +21,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'
 )));
 
-//Error middleware
+// 라우터 설정
+app.use('/api', [productRouter, articleRouter, uploadRouter, usersRouter]);
+
+// Error middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
     const statusCode = err.statusCode || 500;
