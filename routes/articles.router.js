@@ -35,7 +35,7 @@ router
 
           const articles = await prisma.article.findMany({
             where,
-            select: { id: true, title: true, content: true, createdAt: true },
+            select: { id: true, title: true, content: true, createdAt: true, userId: true },
             orderBy: sort === 'recent' ? { createdAt: 'desc' } : undefined,
             skip: offset,
             take: limit,
@@ -54,7 +54,7 @@ router
         const { articleId } = req.params;
         const article = await prisma.article.findUnique({
             where: { id: parseInt(articleId) },
-            select: { id: true, title: true, content: true, createdAt: true },
+            select: { id: true, title: true, content: true, createdAt: true, userId: true },
         });
         if (!article) return res.status(404).json({ message: '게시글을 찾을 수 없습니다.'});
         res.status(200).json(article);
@@ -62,10 +62,14 @@ router
         next(error);
     }
 })
- .patch(validateArticle, async (req, res, next) => {
+ .patch(authMiddleware, validateArticle, async (req, res, next) => {
     try {
         const { articleId } = req.params;
         const { title, content } = req.body;
+        const { user } = req;
+
+        // 게시글 소유 확인
+        const article = await prisma.article.findUnique({ where: { id: parseInt(articleId) } });
         const updatedArticle = await prisma.article.update({
             where: { id: parseInt(articleId) },
             data: { title, content },
@@ -75,9 +79,16 @@ router
         next(error);
     }
 })
- .delete(async (req, res, next) => {
+ .delete(authMiiddleware, async (req, res, next) => {
     try {
         const { articleId } = req.params;
+        const { user } = req;
+
+        const article = await prisma.article.findUnique({ where: { id: parseInt(articleId) } });
+        if (!article || article.userId !== user.id) {
+            return res.status(403).json({ message: '게시글 삭제 권한이 없습니다.' });
+        }
+
         await prisma.article.delete({ where: { id: parseInt(articleId) }});
         res.status(204).send();
     }   catch (error) {
@@ -85,17 +96,20 @@ router
     }
     });
 
-//article API
-router.post('/articles/:articleId/comments', async (req, res, next) => {
+// article comment creation 
+router.post('/articles/:articleId/comments', authMiddleware, async (req, res, next) => {
     try {
         const { articleId } = req.params;
         const { content } = req.body;
+        const { user } = req;
+
         if (!content) return res.status(400).json({ message: '댓글을 입력해주세요.'});
         
         const newComment = await prisma.articleComment.create({
             data: {
                 content,
                 articleId: parseInt(articleId),
+                userId: user.id,
             },
         });
         res.status(201).json(newComment);
@@ -104,7 +118,7 @@ router.post('/articles/:articleId/comments', async (req, res, next) => {
     }
 });
    
-// article check
+// article comments check
 router.get('/articles/:articleId/comments', async (req, res, next) => {
     try {
         const { articleId } = req.params;
@@ -113,7 +127,7 @@ router.get('/articles/:articleId/comments', async (req, res, next) => {
 
         const comments = await prisma.articleComment.findMany({
             where: { articleId: parseInt(articleId) },
-            select: { id: true, content: true, createdAt: true },
+            select: { id: true, content: true, createdAt: true, userId: true },
             orderBy: { createdAt: 'desc' },
             cursor: cursor ? { id: cursor } : undefined,
             take: limit,
@@ -125,12 +139,19 @@ router.get('/articles/:articleId/comments', async (req, res, next) => {
     }
 });
 
-//article modify
-router.patch('/articles/comments/:commentId', async (req, res, next) => {
+//article comment modify
+router.patch('/articles/comments/:commentId', authMiddleware, async (req, res, next) => {
     try {
         const { commentId } = req.params;
         const { content } = req.body;
+        const { user } = req;
+
         if (!content) return res.status(400).json({ message: '수정할 내용을 입력하세요.' });
+
+        const comment = await prisma.articleComment.findUnique({ where: { id: parseInt(commentId) }});
+        if (!comment || comment.userId !== user.id) {
+            return res.status(403).json({ message: '댓글 수정 권한이 없습니다.' });
+        }
 
         const updatedComment = await prisma.articleComment.update
         ({
@@ -143,11 +164,18 @@ router.patch('/articles/comments/:commentId', async (req, res, next) => {
     }
 });
 
-//article delete
-router.delete('/articles/comments/:commentId', async (req, res, next) => {
+//article comment delete
+router.delete('/articles/comments/:commentId', aythMiddleware, async (req, res, next) => {
     try {
         const { commentId } = req.params;
-        await prisma.articleComment.delete({ where: { id: parseInt(commetId) }});
+        const { user } = req;
+
+        const comment = await prisma.articleComment.findUnique({ where: { id: parseInt(commentId) } });
+        if (!comment || comment.userId !== user.id) {
+            return res.status(403).json({ message: '댓글 삭제 권환이 없습니다.' });
+        }
+
+        await prisma.articleComment.delete({ where: { id: parseInt(commentId) }});
         res.status(204).send();
     }   catch (error) {
         next(error);
