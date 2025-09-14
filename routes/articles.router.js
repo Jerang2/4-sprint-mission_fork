@@ -9,9 +9,11 @@ const authMiddleware = require('../middlewares/auth.middleware.js');
 //article registration 
 router
  .route('/articles')
- .post(validateArticle, async (req, res, next) => {
+ .post(authMiddleware, validateArticle, async (req, res, next) => {
     try {
         const { title, content } = req.body;
+        const { user } = req;
+
         const article = await prisma.article.create({ data: { 
             title,
             content,
@@ -23,6 +25,7 @@ router
         next(error);
     }
 })
+  // 게시글 목록 조회
  .get(async (req, res, next) => {
     try {
         const { sort, search } = req.query;
@@ -33,8 +36,8 @@ router
         const where = search
           ? {
             OR: [
-                { title: { contains: search, mode: 'insenstive' }},
-                { content: { constains: search, mode: 'insenstive' }},
+                { title: { contains: search, mode: 'insensitive' }},
+                { content: { contains: search, mode: 'insensitive' }},
             ],
           }
           : {};
@@ -52,7 +55,7 @@ router
         }
     });
 
-//article detail, modify, delete
+// article detail, modify, delete
 router
  .route('/articles/:articleId')
  .get(async (req, res, next) => {
@@ -85,7 +88,7 @@ router
         next(error);
     }
 })
- .delete(authMiiddleware, async (req, res, next) => {
+ .delete(authMiddleware, async (req, res, next) => {
     try {
         const { articleId } = req.params;
         const { user } = req;
@@ -111,7 +114,7 @@ router.post('/articles/:articleId/comments', authMiddleware, async (req, res, ne
 
         if (!content) return res.status(400).json({ message: '댓글을 입력해주세요.'});
         
-        const newComment = await prisma.articleComment.create({
+        const newComment = await prisma.comment.create({
             data: {
                 content,
                 articleId: parseInt(articleId),
@@ -131,7 +134,7 @@ router.get('/articles/:articleId/comments', async (req, res, next) => {
         let cursor = req.query.cursor ? parseInt(req.query.cursor): undefined;
         let limit = parseInt(req.query.limit) || 10;
 
-        const comments = await prisma.articleComment.findMany({
+        const comments = await prisma.comment.findMany({
             where: { articleId: parseInt(articleId) },
             select: { id: true, content: true, createdAt: true, userId: true },
             orderBy: { createdAt: 'desc' },
@@ -154,12 +157,12 @@ router.patch('/articles/comments/:commentId', authMiddleware, async (req, res, n
 
         if (!content) return res.status(400).json({ message: '수정할 내용을 입력하세요.' });
 
-        const comment = await prisma.articleComment.findUnique({ where: { id: parseInt(commentId) }});
+        const comment = await prisma.comment.findUnique({ where: { id: parseInt(commentId) }});
         if (!comment || comment.userId !== user.id) {
             return res.status(403).json({ message: '댓글 수정 권한이 없습니다.' });
         }
 
-        const updatedComment = await prisma.articleComment.update
+        const updatedComment = await prisma.comment.update
         ({
             where: { id: parseInt(commentId) },
             data: { content },
@@ -171,17 +174,17 @@ router.patch('/articles/comments/:commentId', authMiddleware, async (req, res, n
 });
 
 //article comment delete
-router.delete('/articles/comments/:commentId', aythMiddleware, async (req, res, next) => {
+router.delete('/articles/comments/:commentId', authMiddleware, async (req, res, next) => {
     try {
         const { commentId } = req.params;
         const { user } = req;
 
-        const comment = await prisma.articleComment.findUnique({ where: { id: parseInt(commentId) } });
+        const comment = await prisma.comment.findUnique({ where: { id: parseInt(commentId) } });
         if (!comment || comment.userId !== user.id) {
             return res.status(403).json({ message: '댓글 삭제 권환이 없습니다.' });
         }
 
-        await prisma.articleComment.delete({ where: { id: parseInt(commentId) }});
+        await prisma.comment.delete({ where: { id: parseInt(commentId) }});
         res.status(204).send();
     }   catch (error) {
         next(error);
