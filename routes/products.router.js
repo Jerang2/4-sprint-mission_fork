@@ -7,11 +7,17 @@ const { validationProduct, validateProduct } = require('../middlewares/validatio
 const authMiddleware = require('../middlewares/auth.middleware.js');
 
 // registration router
-router.post('/products', validateProduct, async (req, res, next) => {
+router.post('/products', authMiddleware, validateProduct, async (req, res, next) => {
     try {
-        const { name, description, price, tags } = req.body;
+        const { name, description, price } = req.body;
+        const { user } = req;
         const product = await prisma.product.create({
-            data: { name, description, price, tags },
+            data: {
+                name,
+                description,
+                price,
+                userId: user.id,
+            },
         });
         res.status(201).json(product);
     }   catch(error) {
@@ -38,7 +44,7 @@ router.get('/products', async (req, res, next) => {
         : {};
         const products = await prisma.product.findMany({
             where,
-            select: { id: true, name: true, price: true, createdAt: true, imageUrl: true },
+            select: { id: true, name: true, price: true, createdAt: true, userId: true },
             orderBy: sort === 'recent' ? { createdAt: 'desc' } : undefined,
             skip: offset,
             take: limit,
@@ -58,7 +64,7 @@ router
         const product = await prisma.product.findUnique({
             where: { id: parseInt(productId) },
             select: { id: true, name: true, description: true, price: true,
-                 tags: true, createdAt: true, imageUrl: true, userId: true },
+                createdAt: true, userId: true },
             });
             if (!product) return res.status(404).json({ message: '상품을 찾을수 없습니다.'});
             res.status(200).json(product);
@@ -69,7 +75,7 @@ router
         .patch(validateProduct, authMiddleware, async (req, res, next) => {
             try {
                 const { productId } = req.params;
-                const { name, description, price, tags } = req.body;
+                const { name, description, price } = req.body;
                 const { user } = req;
 
                 // 상품 소유자 확인
@@ -80,7 +86,7 @@ router
 
                 const updatedProduct = await prisma.product.update({
                     where: { id: parseInt(productId) },
-                    data: { name, description, price, tags },
+                    data: { name, description, price },
                 });
                 res.status(200).json(updatedProduct);
             }   catch (error) {
@@ -108,14 +114,14 @@ router
 router.post('/products/:productId/comments', authMiddleware,  async (req, res, next) => {
     try {
         const { productId } = req.params;
-        const { comment } = req.body
+        const { content } = req.body
         const { user } = req;
 
-        if (!comment) return res.status(400).json({ message: '댓글을 입력해주세요.' });
+        if (!content) return res.status(400).json({ message: '댓글을 입력해주세요.' });
 
-        const newComment = await prisma.productComment.create({
+        const newComment = await prisma.comment.create({
             data: {
-                comment,
+                content,
                 productId: parseInt(productId),
                 userId: user.id,
             },
@@ -133,9 +139,9 @@ router.get('/products/:productId/comments', async (req, res, next) => {
         let cursor = req.query.cursor ? parseInt(req.query.cursor): undefined;
         let limit = parseInt(req.query.limit) || 10;
 
-        const comments = await prisma.productComment.findMany({
+        const comments = await prisma.comment.findMany({
             where: { productId: parseInt(productId) },
-            select: { id: true, comment: true, createdAt: true, userId: true },
+            select: { id: true, content: true, createdAt: true, userId: true },
             orderBy: { createdAt: 'desc' },
             cursor: cursor ? { id: cursor } : undefined,
             take: limit,
@@ -151,17 +157,17 @@ router.get('/products/:productId/comments', async (req, res, next) => {
 router.patch('/products/comments/:commentId', authMiddleware, async (req, res, next) => {
     try {
         const { commentId } = req.params;
-        const { comment } = req.body;
+        const { content } = req.body;
         const { user } = req;
 
-        if (!comment) return res.status(400).json({ message: '수정할 내용을 입력해주세요.'});
+        if (!content) return res.status(400).json({ message: '수정할 내용을 입력해주세요.'});
 
-        const existingComment = await prisma.productComment.findUnique({ where: { id: parseInt(commentId) } });
-        if (!existngComment || existingComment.userId !== user.id) {
+        const existingComment = await prisma.comment.findUnique({ where: { id: parseInt(commentId) } });
+        if (!existingComment || existingComment.userId !== user.id) {
             return res.status(403).json({ message: '댓글 수정 권한이 없습니다.' });
         }
     
-        const updatedComment = await prisma.productComment.update 
+        const updatedComment = await prisma.comment.update 
 ({
          where: { id: parseInt(commentId) },
          data: { content },
@@ -178,12 +184,12 @@ router.delete('/products/comments/:commentId', authMiddleware, async (req, res, 
         const { commentId } = req.params;
         const { user } = req;
 
-        const existingComment = await prisma.productComment.findUnique({ where: { id: parseInt(commentId) } });
+        const existingComment = await prisma.comment.findUnique({ where: { id: parseInt(commentId) } });
         if (!existingComment || existingComment.userId !== user.id) {
             return res.status(403).json({ message: '댓글 삭제 권한이 없습니다.' });
         }
         
-        await prisma.productComment.delete({ where: { id: parseInt(commentId) }});
+        await prisma.comment.delete({ where: { id: parseInt(commentId) }});
         res.status(204).send();
     }   catch(error) {
         next(error);
