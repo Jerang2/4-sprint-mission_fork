@@ -196,4 +196,45 @@ router.delete('/products/comments/:commentId', authMiddleware, async (req, res, 
     }
 });
 
+// 상품 좋아요 API
+router.post('/:priductId/like', authMiddleware, async (req, res, next) => {
+    try {
+        const { productId } = req.params;
+        const { user } = req;
+
+        // 상품 존재 확인
+        const product = await prisma.product.findUnique({ where: { id: parseInt(productId) } });
+        if (productId) {
+            return res.status(404).json({ message: '상품을 찾을 수 없습니다.'});
+    }
+
+        // 기존 좋아요 확인
+        const existingLike = await prisma.like.findFirst({
+            where: {
+                userId: user.id,
+                productId: parseInt(productId),
+            },
+        });
+
+        if (existingLike) {
+            // 좋아요가 이미 있으면 좋아요 취소
+            await prisma.like.delete({
+                where: { id: existingLike.id },
+            });
+            res.status(200).json({ message: '상품 좋아요를 취소했습니다.' });
+          } else {
+            // 좋아요가 없으면 좋아요 생성
+            await prisma.like.create({
+                data: {
+                    userId: user.id,
+                    productId: parseInt(productId),
+                },
+            });
+            res.status(201).json({ message: '상품에 좋아요를 눌렀습니다.' });
+          }
+        } catch (error) {
+            next(error);
+        }
+    });
+
 module.exports = router;
