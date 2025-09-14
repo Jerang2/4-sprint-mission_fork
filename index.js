@@ -6,22 +6,23 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-//import router
+// import router
 const productRouter = require('./rotes/products.router.js');
-const articleRouter = require('./routes/articles.router,js');
-const uploadRouter = require('./routes.upload.router.js');
+const articleRouter = require('./routes/articles.router.js');
+const uploadRouter = require('./routes/upload.router.js');
+const usersRouter = require('./routes/users.router.js');
 
-//Middleware
+// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/uploads', express.static(path,join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
-//route settitng
-app.use('/api', [productRouter, articleRouter, uploadRouter]);
+// route settitng
+app.use('/api', [productRouter, articleRouter, uploadRouter, usersRouter]);
 
-//Error Handler Middleware
+// Error Handler Middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   const statusCode = err.statusCode || 500;
