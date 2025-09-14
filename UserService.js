@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 class UserService {    
     prisma = new PrismaClient();
@@ -28,6 +29,29 @@ class UserService {
         // 사용자 정보 반환
         const { password: _, ...userWithoutPassword } = user;
         return userWithoutPassword;
+    };
+
+    signIn = async (email, password) => {
+        // 이메일로 사용자 조회
+        const user = await this.prisma.user.findUnique({ where: { email } });
+        if (!user) {
+            throw new Error('존재하지 않는 이메일입니다.');
+        }
+
+        // 비밀번호 확인
+        const isPasswordMatched = await bcrypt.compare(password, user.password);
+        if (!isPasswordMatched) {
+            throw new Error('비밀번호가 일치하지 않습니다.');
+        }
+
+        // 로그인 성공시 JWT 생성
+        const token = jwt.sign(
+            { userId: user.id },
+            process.env.JWT_SECRET_KEY,
+            { expiresIn: '12h' }
+        );
+
+        return token;
     };
 }
 
