@@ -10,13 +10,12 @@ const optionalAuthMiddleware = require('../middlewares/optionalAuth.middleware.j
 // registration router
 router.post('/products', authMiddleware, validateProduct, async (req, res, next) => {
     try {
-        const { name, description, price } = req.body;
+        const { name, content } = req.body;
         const { user } = req;
         const product = await prisma.product.create({
             data: {
                 name,
-                description,
-                price,
+                content,
                 userId: user.id,
             },
         });
@@ -38,7 +37,7 @@ router.get('/products', optionalAuthMiddleware, async (req, res, next) => {
         ? {
             OR: [
                 { name: { contains: search, mode: 'insensitive' }},
-                { description: { contains: search, mode: 'insensitive'
+                { content: { contains: search, mode: 'insensitive'
                 } },
             ],
         }
@@ -47,7 +46,7 @@ router.get('/products', optionalAuthMiddleware, async (req, res, next) => {
         const user = req.user;
         const products = await prisma.product.findMany({
             where,
-            select: { id: true, name: true, price: true, createdAt: true, userId: true },
+            select: { id: true, name: true, createdAt: true, userId: true },
             orderBy: sort === 'recent' ? { createdAt: 'desc' } : undefined,
             skip: offset,
             take: limit,
@@ -98,7 +97,7 @@ router
 
         const product = await prisma.product.findUnique({
             where: { id: parseInt(productId) },
-            select: { id: true, name: true, description: true, price: true,
+            select: { id: true, name: true, content: true,
                 createdAt: true, userId: true },
             });
 
@@ -129,7 +128,7 @@ router
         .patch(validateProduct, authMiddleware, async (req, res, next) => {
             try {
                 const { productId } = req.params;
-                const { name, description, price } = req.body;
+                const { name, content } = req.body;
                 const { user } = req;
 
                 // 상품 소유자 확인
@@ -140,7 +139,7 @@ router
 
                 const updatedProduct = await prisma.product.update({
                     where: { id: parseInt(productId) },
-                    data: { name, description, price },
+                    data: { name, content },
                 });
                 res.status(200).json(updatedProduct);
             }   catch (error) {
@@ -251,7 +250,7 @@ router.delete('/products/comments/:commentId', authMiddleware, async (req, res, 
 });
 
 // 상품 좋아요 API
-router.post('/:productId/like', authMiddleware, async (req, res, next) => {
+router.post('/products/:productId/like', authMiddleware, async (req, res, next) => {
     try {
         const { productId } = req.params;
         const { user } = req;

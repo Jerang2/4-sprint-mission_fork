@@ -65,12 +65,12 @@ router
 
         const likedArticleIds = new Set(likes.map(like => like.articleId));
 
-        responseArticles = articles.map(article => ({
+        responseArticle = articles.map(article => ({
             ...article,
             isLiked: likedArticleIds.has(article.id),
         }));
         } else {
-        responseArticles = articles.map(article => ({
+        responseArticle = articles.map(article => ({
             ...article,
             isLiked: false,
         }));
