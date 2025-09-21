@@ -3,12 +3,22 @@ import ArticleService from '../ArticleService';
 import { Article as PrismaArticle, Prisma } from '@prisma/client';
 import prisma from '../index';
 import { ArticleCreateDto, ArticleUpdateDto } from '../dtos/ArticleDto';
+import CommentService from '../CommentService';
+import LikeService from '../LikeService';
+import CommentRepository from '../repositories/CommentRepository';
+import LikeRepository from '../repositories/LikeRepository';
 
 class ArticlesController {
     private articleService: ArticleService;
+    private commentService: CommentService;
+    private likeService: LikeService;
 
     constructor(articleService: ArticleService) {
         this.articleService = articleService;
+        const commentRepository = new CommentRepository();
+        this.commentService = new CommentService(commentRepository);
+        const likeRepository = new LikeRepository();
+        this.likeService = new LikeService(likeRepository);
     }
 
     createArticle = async (req: Request, res: Response, next: NextFunction) => {
@@ -60,7 +70,7 @@ class ArticlesController {
 
             if (user) {
             const articleIds = articles.map(article => article.id);
-            const likes = await prisma.like.findMany({
+            const likes = await this.likeService.findLikes({
                 where: {
                     userId: user.id,
                     articleId: { in: articleIds },
@@ -99,12 +109,7 @@ class ArticlesController {
 
             let isLiked = false;
             if (user) {
-                const like = await prisma.like.findFirst({
-                    where: {
-                        articleId: article.id,
-                        userId: user.id,
-                    },
-                });
+                const like = await this.likeService.findLikeByUserIdAndArticleId(user.id, parseInt(articleId));
                 if (like) {
                     isLiked = true;
                 }
@@ -176,12 +181,10 @@ class ArticlesController {
 
             if (!content) return res.status(400).json({ message: '댓글을 입력해주세요.'});
             
-            const newComment = await prisma.comment.create({
-                data: {
-                    content,
-                    articleId: parseInt(articleId),
-                    userId: user.id,
-                },
+            const newComment = await this.commentService.createComment({
+                content,
+                articleId: parseInt(articleId),
+                userId: user.id,
             });
             res.status(201).json(newComment);
         }   catch (error) {
@@ -195,7 +198,7 @@ class ArticlesController {
             let cursor = req.query.cursor ? parseInt(req.query.cursor as string): undefined;
             let limit = parseInt(req.query.limit as string) || 10;
 
-            const comments = await prisma.comment.findMany({
+            const comments = await this.commentService.getComments({
                 where: { articleId: parseInt(articleId) },
                 select: { id: true, content: true, createdAt: true, userId: true },
                 orderBy: { createdAt: 'desc' },
@@ -221,15 +224,13 @@ class ArticlesController {
 
             if (!content) return res.status(400).json({ message: '수정할 내용을 입력하세요.' });
 
-            const comment = await prisma.comment.findUnique({ where: { id: parseInt(commentId) }});
+            const comment = await this.commentService.getCommentById(parseInt(commentId));
             if (!comment || comment.userId !== user.id) {
                 return res.status(403).json({ message: '댓글 수정 권한이 없습니다.' });
             }
 
-            const updatedComment = await prisma.comment.update
-            ({
-                where: { id: parseInt(commentId) },
-                data: { content },
+            const updatedComment = await this.commentService.updateComment(parseInt(commentId), {
+                content,
             });
             res.status(200).json(updatedComment);
         }   catch (error) {
@@ -246,12 +247,12 @@ class ArticlesController {
                 return res.status(401).json({ message: '사용자 정보를 찾을 수 없습니다.' });
             }
 
-            const comment = await prisma.comment.findUnique({ where: { id: parseInt(commentId) } });
+            const comment = await this.commentService.getCommentById(parseInt(commentId) );
             if (!comment || comment.userId !== user.id) {
                 return res.status(403).json({ message: '댓글 삭제 권환이 없습니다.' });
             }
 
-            await prisma.comment.delete({ where: { id: parseInt(commentId) }});
+            await this.commentService.deleteComment(parseInt(commentId));
             res.status(204).send();
         }   catch (error) {
             next(error);
@@ -267,29 +268,20 @@ class ArticlesController {
                 return res.status(401).json({ message: '사용자 정보를 찾을 수 없습니다.' });
             }
 
-            const article = await prisma.article.findUnique({ where: { id: parseInt(articleId) } });
+            const article = await this.articleService.getArticleById(parseInt(articleId));
         if (!article) {
             return res.status(404).json({ message: '게시글을 찾을 수 없습니다.'});
         }
 
-            const existingLike = await prisma.like.findFirst({
-                where: {
-                    userId: user.id,
-                    articleId: parseInt(articleId),
-                },
-            });
+            const existingLike = await this.likeService.findLikeByUserIdAndArticleId(user.id, parseInt(articleId));
 
             if (existingLike) {
-                await prisma.like.delete({
-                    where: { id: existingLike.id },
-                });
+                await this.likeService.deleteLike(existingLike.id);
                 res.status(200).json({ message: '게시글 좋아요를 취소했습니다.' });
               } else {
-                await prisma.like.create({
-                    data: {
-                        userId: user.id,
-                        articleId: parseInt(articleId),
-                    },
+                await this.likeService.createLike({
+                    userId: user.id,
+                    articleId: parseInt(articleId),
                 });
                 res.status(201).json({ message: '게시글에 좋아요를 눌렀습니다.' });
             }

@@ -3,12 +3,22 @@ import ProductService from '../ProductService';
 import { Product as PrismaProduct, Prisma } from '@prisma/client';
 import prisma from '../index';
 import { ProductCreateDto, ProductUpdateDto } from '../dtos/ProductDto';
+import CommentService from '../CommentService';
+import LikeService from '../LikeService';
+import CommentRepository from '../repositories/CommentRepository';
+import LikeRepository from '../repositories/LikeRepository';
 
 class ProductsController {
     private productService: ProductService;
+    private commentService: CommentService;
+    private likeService: LikeService;
 
     constructor(productService: ProductService) {
         this.productService = productService;
+        const commentRepository = new CommentRepository();
+        this.commentService = new CommentService(commentRepository);
+        const likeRepository = new LikeRepository();
+        this.likeService = new LikeService(likeRepository);
     }
 
     createProduct = async (req: Request, res: Response, next: NextFunction) => {
@@ -62,7 +72,7 @@ class ProductsController {
 
             if (user) {
                 const productIds = products.map(product => product.id);
-                const likes = await prisma.like.findMany({
+                const likes = await this.likeService.findLikes({
                     where: {
                         userId: user.id,
                         productId: { in: productIds },
@@ -101,12 +111,7 @@ class ProductsController {
             
             let isLiked = false;
             if (user) {
-                const like = await prisma.like.findFirst({
-                    where: {
-                        productId: product.id,
-                        userId: user.id,
-                    },
-                });
+                const like = await this.likeService.findLikeByUserIdAndProductId(user.id, parseInt(productId));
                 if (like) {
                     isLiked = true;
                 }
@@ -178,12 +183,10 @@ class ProductsController {
 
             if (!content) return res.status(400).json({ message: '댓글을 입력해주세요.' });
 
-            const newComment = await prisma.comment.create({
-                data: {
-                    content,
-                    productId: parseInt(productId),
-                    userId: user.id,
-                },
+            const newComment = await this.commentService.createComment({
+                content,
+                productId: parseInt(productId),
+                userId: user.id,
             });
             res.status(201).json(newComment);
         }   catch (error) {
@@ -197,7 +200,7 @@ class ProductsController {
             let cursor = req.query.cursor ? parseInt(req.query.cursor as string): undefined;
             let limit = parseInt(req.query.limit as string) || 10;
 
-            const comments = await prisma.comment.findMany({
+            const comments = await this.commentService.getComments({
                 where: { productId: parseInt(productId) },
                 select: { id: true, content: true, createdAt: true, userId: true },
                 orderBy: { createdAt: 'desc' },
@@ -223,15 +226,13 @@ class ProductsController {
 
             if (!content) return res.status(400).json({ message: '수정할 내용을 입력해주세요.'});
 
-            const existingComment = await prisma.comment.findUnique({ where: { id: parseInt(commentId) } });
+            const existingComment = await this.commentService.getCommentById(parseInt(commentId));
             if (!existingComment || existingComment.userId !== user.id) {
                 return res.status(403).json({ message: '댓글 수정 권한이 없습니다.' });
             }
         
-            const updatedComment = await prisma.comment.update 
-({
-             where: { id: parseInt(commentId) },
-             data: { content },
+            const updatedComment = await this.commentService.updateComment(parseInt(commentId), {
+             content,
          });
             res.status(200).json(updatedComment);
         }   catch (error) {
@@ -248,12 +249,12 @@ class ProductsController {
                 return res.status(401).json({ message: '사용자 정보를 찾을 수 없습니다.' });
             }
 
-            const existingComment = await prisma.comment.findUnique({ where: { id: parseInt(commentId) } });
+            const existingComment = await this.commentService.getCommentById(parseInt(commentId));
             if (!existingComment || existingComment.userId !== user.id) {
                 return res.status(403).json({ message: '댓글 삭제 권한이 없습니다.' });
             }
             
-            await prisma.comment.delete({ where: { id: parseInt(commentId) }});
+            await this.commentService.deleteComment(parseInt(commentId));
             res.status(204).send();
         }   catch(error) {
             next(error);
@@ -269,29 +270,20 @@ class ProductsController {
                 return res.status(401).json({ message: '사용자 정보를 찾을 수 없습니다.' });
             }
 
-            const product = await prisma.product.findUnique({ where: { id: parseInt(productId) } });
+            const product = await this.productService.getProductById(parseInt(productId));
             if (!product) {
                 return res.status(404).json({ message: '상품을 찾을 수 없습니다.'});
         }
 
-            const existingLike = await prisma.like.findFirst({
-                where: {
-                    userId: user.id,
-                    productId: parseInt(productId),
-                },
-            });
+            const existingLike = await this.likeService.findLikeByUserIdAndProductId(user.id, parseInt(productId));
 
             if (existingLike) {
-                await prisma.like.delete({
-                    where: { id: existingLike.id },
-                });
+                await this.likeService.deleteLike(existingLike.id);
                 res.status(200).json({ message: '상품 좋아요를 취소했습니다.' });
               } else {
-                await prisma.like.create({
-                    data: {
-                        userId: user.id,
-                        productId: parseInt(productId),
-                    },
+                await this.likeService.createLike({
+                    userId: user.id,
+                    productId: parseInt(productId),
                 });
                 res.status(201).json({ message: '상품에 좋아요를 눌렀습니다.' });
               }
