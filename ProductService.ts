@@ -3,14 +3,16 @@ import { Product as PrismaProduct, Prisma } from '@prisma/client';
 
 interface ProductCreateInput {
   name: string;
-  content: string;
+  content: string; // Changed from description to content
+  price: number;
   status?: string;
   userId: number;
 }
 
 interface ProductUpdateInput {
   name?: string;
-  content?: string;
+  content?: string; // Changed from description to content
+  price?: number;
   status?: string;
 }
 

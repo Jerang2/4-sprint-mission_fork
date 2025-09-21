@@ -20,7 +20,7 @@ router.post('/products', auth_middleware_1.default, validation_middleware_1.vali
         const product = await index_1.default.product.create({
             data: {
                 name,
-                description,
+                content: description, // Map description to content
                 price,
                 userId: user.id,
             },
@@ -42,7 +42,7 @@ router.get('/products', optionalAuth_middleware_1.default, async (req, res, next
             ? {
                 OR: [
                     { name: { contains: search, mode: 'insensitive' } },
-                    { description: { contains: search, mode: 'insensitive'
+                    { content: { contains: search, mode: 'insensitive'
                         } },
                 ],
             }
@@ -50,7 +50,7 @@ router.get('/products', optionalAuth_middleware_1.default, async (req, res, next
         const user = req.user;
         const products = await index_1.default.product.findMany({
             where,
-            select: { id: true, name: true, price: true, createdAt: true, userId: true },
+            select: { id: true, name: true, price: true, createdAt: true, userId: true, updatedAt: true },
             orderBy: sort === 'recent' ? { createdAt: 'desc' } : undefined,
             skip: offset,
             take: limit,
@@ -95,7 +95,7 @@ router
         const product = await index_1.default.product.findUnique({
             where: { id: parseInt(productId) },
             select: { id: true, name: true, description: true, price: true,
-                createdAt: true, userId: true },
+                createdAt: true, userId: true, updatedAt: true },
         });
         if (!product)
             return res.status(404).json({ message: '상품을 찾을수 없습니다.' });
@@ -134,7 +134,7 @@ router
         }
         const updatedProduct = await index_1.default.product.update({
             where: { id: parseInt(productId) },
-            data: { name, description, price },
+            data: { name, content: description, price },
         });
         res.status(200).json(updatedProduct);
     }

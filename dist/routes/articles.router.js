@@ -49,7 +49,7 @@ router
         const user = req.user;
         const articles = await index_1.default.article.findMany({
             where,
-            select: { id: true, title: true, content: true, createdAt: true, userId: true },
+            select: { id: true, title: true, content: true, createdAt: true, userId: true, updatedAt: true },
             orderBy: sort === 'recent' ? { createdAt: 'desc' } : undefined,
             skip: offset,
             take: limit,
@@ -90,7 +90,7 @@ router
         const user = req.user;
         const article = await index_1.default.article.findUnique({
             where: { id: parseInt(articleId) },
-            select: { id: true, title: true, content: true, createdAt: true, userId: true },
+            select: { id: true, title: true, content: true, createdAt: true, userId: true, updatedAt: true },
         });
         if (!article) {
             return res.status(404).json({ message: '게시글을 찾을 수 없습니다.' });
