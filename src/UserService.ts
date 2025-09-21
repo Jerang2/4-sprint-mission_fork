@@ -1,21 +1,22 @@
-import prisma from './index';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { User as PrismaUser } from '@prisma/client';
-import { Request, Response, NextFunction } from 'express';
-import authMiddleware from './middlewares/auth.middleware';
-import cookieParser from 'cookie-parser';
+import { User as PrismaUser, Prisma } from '@prisma/client';
+import UserRepository from './repositories/UserRepository';
 
 interface UserWithoutPassword extends Omit<PrismaUser, 'password' | 'refreshToken'> {}
 
 class UserService {
-    private prisma = prisma;
+    private userRepository: UserRepository;
+
+    constructor(userRepository: UserRepository) {
+        this.userRepository = userRepository;
+    }
 
     // 회원가입 로직
     public signUp = async (email: string, nickname: string, password: string): Promise<UserWithoutPassword> => {
         
         // 이메일 중복 확인
-        const existingUser = await this.prisma.user.findUnique({ where: { email } });
+        const existingUser = await this.userRepository.findUserByEmail(email);
         if (existingUser) {
             throw new Error('이미 사용중인 이메일입니다.');
         }
@@ -24,12 +25,10 @@ class UserService {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // 유저 생성
-        const user = await this.prisma.user.create({
-            data: {
-                email,
-                nickname,
-                password: hashedPassword,
-            },
+        const user = await this.userRepository.createUser({
+            email,
+            nickname,
+            password: hashedPassword,
         });
 
         // 사용자 정보 반환
@@ -39,7 +38,7 @@ class UserService {
 
     public signIn = async (email: string, password: string): Promise<{ accessToken: string; refreshToken: string }> => {
         // 이메일로 사용자 조회
-        const user = await this.prisma.user.findUnique({ where: { email } });
+        const user = await this.userRepository.findUserByEmail(email);
         if (!user) {
             throw new Error('존재하지 않는 이메일입니다.');
         }
@@ -65,12 +64,33 @@ class UserService {
         );
 
         // Refresh Token을 해싱해서 DB에 저장
-        await this.prisma.user.update({
-            where: { id: user.id },
-            data: { refreshToken: await bcrypt.hash(refreshToken, 10) },
+        await this.userRepository.updateUser(user.id, {
+            refreshToken: await bcrypt.hash(refreshToken, 10),
         });
 
         return { accessToken, refreshToken };
+    };
+
+    public getUserById = async (id: number): Promise<PrismaUser | null> => {
+        return this.userRepository.findUserById(id);
+    };
+
+    public updateUser = async (id: number, data: Prisma.UserUpdateInput): Promise<PrismaUser> => {
+        return this.userRepository.updateUser(id, data);
+    };
+
+    public updatePassword = async (id: number, newPasswordHash: string): Promise<PrismaUser> => {
+        return this.userRepository.updateUser(id, { password: newPasswordHash });
+    };
+
+    public getProductsByUserId = async (userId: number): Promise<Prisma.Product[] | null> => {
+        // This method will need to be implemented in UserRepository or a new ProductRepository method
+        // For now, directly using prisma for product related queries from user service
+        const userWithProducts = await prisma.user.findUnique({
+            where: { id: userId },
+            include: { products: true },
+        });
+        return userWithProducts ? userWithProducts.products : null;
     };
 }
 

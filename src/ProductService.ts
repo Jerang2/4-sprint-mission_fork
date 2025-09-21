@@ -1,9 +1,9 @@
-import prisma from './index';
 import { Product as PrismaProduct, Prisma } from '@prisma/client';
+import ProductRepository from './repositories/ProductRepository';
 
 interface ProductCreateInput {
   name: string;
-  content: string; // Changed from description to content
+  content: string;
   price: number;
   status?: string;
   userId: number;
@@ -11,30 +11,36 @@ interface ProductCreateInput {
 
 interface ProductUpdateInput {
   name?: string;
-  content?: string; // Changed from description to content
+  content?: string;
   price?: number;
   status?: string;
 }
 
 class ProductService {
+  private productRepository: ProductRepository;
+
+  constructor(productRepository: ProductRepository) {
+    this.productRepository = productRepository;
+  }
+
   async createProduct(data: ProductCreateInput): Promise<PrismaProduct> {
-    return prisma.product.create({ data });
+    return this.productRepository.createProduct(data);
   }
 
   async getProductById(id: number): Promise<PrismaProduct | null> {
-    return prisma.product.findUnique({ where: { id } });
+    return this.productRepository.findProductById(id);
   }
 
   async getProducts(options?: { skip?: number; take?: number; where?: Prisma.ProductWhereInput; orderBy?: Prisma.ProductOrderByWithRelationInput }): Promise<PrismaProduct[]> {
-    return prisma.product.findMany(options);
+    return this.productRepository.findProducts(options);
   }
 
   async updateProduct(id: number, data: ProductUpdateInput): Promise<PrismaProduct> {
-    return prisma.product.update({ where: { id }, data });
+    return this.productRepository.updateProduct(id, data);
   }
 
   async deleteProduct(id: number): Promise<PrismaProduct> {
-    return prisma.product.delete({ where: { id } });
+    return this.productRepository.deleteProduct(id);
   }
 }
 

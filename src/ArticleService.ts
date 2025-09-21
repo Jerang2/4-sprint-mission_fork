@@ -1,5 +1,5 @@
-import prisma from './index';
 import { Article as PrismaArticle, Prisma } from '@prisma/client';
+import ArticleRepository from './repositories/ArticleRepository';
 
 interface ArticleCreateInput {
   title: string;
@@ -13,24 +13,30 @@ interface ArticleUpdateInput {
 }
 
 class ArticleService {
+  private articleRepository: ArticleRepository;
+
+  constructor(articleRepository: ArticleRepository) {
+    this.articleRepository = articleRepository;
+  }
+
   async createArticle(data: ArticleCreateInput): Promise<PrismaArticle> {
-    return prisma.article.create({ data });
+    return this.articleRepository.createArticle(data);
   }
 
   async getArticleById(id: number): Promise<PrismaArticle | null> {
-    return prisma.article.findUnique({ where: { id } });
+    return this.articleRepository.findArticleById(id);
   }
 
   async getArticles(options?: { skip?: number; take?: number; where?: Prisma.ArticleWhereInput; orderBy?: Prisma.ArticleOrderByWithRelationInput }): Promise<PrismaArticle[]> {
-    return prisma.article.findMany(options);
+    return this.articleRepository.findArticles(options);
   }
 
   async updateArticle(id: number, data: ArticleUpdateInput): Promise<PrismaArticle> {
-    return prisma.article.update({ where: { id }, data });
+    return this.articleRepository.updateArticle(id, data);
   }
 
   async deleteArticle(id: number): Promise<PrismaArticle> {
-    return prisma.article.delete({ where: { id } });
+    return this.articleRepository.deleteArticle(id);
   }
 }
 
