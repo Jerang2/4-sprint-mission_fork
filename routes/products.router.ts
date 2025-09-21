@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import prisma from '../index'; // Import prisma from index.ts
-import { validationProduct, validateProduct } from '../middlewares/validation.middleware';
+import { validateProduct } from '../middlewares/validation.middleware';
 import authMiddleware from '../middlewares/auth.middleware';
 import optionalAuthMiddleware from '../middlewares/optionalAuth.middleware';
 import { Product as PrismaProduct, Prisma } from '@prisma/client';
