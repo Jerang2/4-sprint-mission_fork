@@ -22,7 +22,7 @@ class UserRepository {
     return prisma.user.delete({ where: { id } });
   }
 
-  async findProductsByUserId(userId: number): Promise<Prisma.Product[] | null> {
+  async findProductsByUserId(userId: number): Promise<Product[] | null> {
     const userWithProducts = await prisma.user.findUnique({
         where: { id: userId },
         include: { products: true },

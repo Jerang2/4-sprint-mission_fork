@@ -78,7 +78,7 @@ class ProductsController {
                     },
                 });
 
-                const likedProductIds = new Set(likes.map((like: Prisma.Like) => like.productId));
+                const likedProductIds = new Set(likes.map((like: Like) => like.productId));
 
                 responseProducts = products.map(product => ({
                     ...product,
