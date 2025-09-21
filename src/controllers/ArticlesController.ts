@@ -76,7 +76,7 @@ class ArticlesController {
                 },
             });
 
-            const likedArticleIds = new Set(likes.map((like: Prisma.Like) => like.articleId));
+            const likedArticleIds = new Set(likes.map((like: Like) => like.articleId));
 
             responseArticles = articles.map(article => ({
                 ...article,
