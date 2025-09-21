@@ -1,5 +1,5 @@
 import prisma from '../index';
-import { User as PrismaUser, Prisma } from '@prisma/client';
+import { User as PrismaUser, Prisma, Product } from '@prisma/client';
 
 class UserRepository {
   async findUserById(id: number): Promise<PrismaUser | null> {

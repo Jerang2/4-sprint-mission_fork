@@ -5,7 +5,11 @@ class ProductService {
         this.productRepository = productRepository;
     }
     async createProduct(data) {
-        return this.productRepository.createProduct(data);
+        const { userId, ...rest } = data;
+        return this.productRepository.createProduct({
+            ...rest,
+            user: { connect: { id: userId } },
+        });
     }
     async getProductById(id) {
         return this.productRepository.findProductById(id);

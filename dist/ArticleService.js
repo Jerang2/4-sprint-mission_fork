@@ -5,7 +5,11 @@ class ArticleService {
         this.articleRepository = articleRepository;
     }
     async createArticle(data) {
-        return this.articleRepository.createArticle(data);
+        const { userId, ...rest } = data;
+        return this.articleRepository.createArticle({
+            ...rest,
+            user: { connect: { id: userId } },
+        });
     }
     async getArticleById(id) {
         return this.articleRepository.findArticleById(id);

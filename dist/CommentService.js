@@ -5,7 +5,13 @@ class CommentService {
         this.commentRepository = commentRepository;
     }
     async createComment(data) {
-        return this.commentRepository.createComment(data);
+        const { userId, productId, articleId, ...rest } = data;
+        return this.commentRepository.createComment({
+            ...rest,
+            user: { connect: { id: userId } },
+            ...(productId && { product: { connect: { id: productId } } }),
+            ...(articleId && { article: { connect: { id: articleId } } }),
+        });
     }
     async getCommentById(id) {
         return this.commentRepository.findCommentById(id);

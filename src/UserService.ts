@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { User as PrismaUser, Prisma } from '@prisma/client';
+import { User as PrismaUser, Product } from '@prisma/client';
 import UserRepository from './repositories/UserRepository';
 import { UserCreateDto, UserUpdateDto } from './dtos/UserDto';
 
