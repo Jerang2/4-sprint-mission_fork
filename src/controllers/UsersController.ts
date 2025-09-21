@@ -3,6 +3,7 @@ import UserService from '../UserService';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import prisma from '../index';
+import { UserCreateDto, UserSignInDto, UserUpdateDto, UserChangePasswordDto } from '../dtos/UserDto';
 
 class UsersController {
     private userService: UserService;
@@ -13,7 +14,7 @@ class UsersController {
 
     signUp = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { email, nickname, password } = req.body;
+            const { email, nickname, password }: UserCreateDto = req.body;
 
             if (!email || !nickname || !password) {
                 return res.status(400).json({ message: '모든 정보를 입력해주세요'});
@@ -35,7 +36,7 @@ class UsersController {
 
     signIn = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { email, password } = req.body;
+            const { email, password }: UserSignInDto = req.body;
 
             if (!email || !password) {
                 return res.status(400).json({ message: '이메일과 비밀번호를 모두 입력해주세요.'});
@@ -86,7 +87,7 @@ class UsersController {
 
     updateMe = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { nickname, image } = req.body;
+            const { nickname, image }: UserUpdateDto = req.body;
             const { user } = req;
 
             if (!user) {
@@ -122,7 +123,7 @@ class UsersController {
 
     changePassword = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { currentPassword, newPassword, confirmNewPassword } = req.body;
+            const { currentPassword, newPassword, confirmNewPassword }: UserChangePasswordDto = req.body;
             const { user } = req;
 
             if (!user) {
@@ -191,7 +192,7 @@ class UsersController {
             }
 
             const isRefreshTokenMatched = await bcrypt.compare(refreshToken, user.refreshToken as string);
-            if (!isRefreshToken.Matched) {
+            if (!isRefreshTokenMatched) {
                 return res.status(401).json({ message: 'Refresh Token이 유효하지 않습니다.' });
             }
 

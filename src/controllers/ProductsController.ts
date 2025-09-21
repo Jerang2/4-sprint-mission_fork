@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import ProductService from '../ProductService';
 import { Product as PrismaProduct, Prisma } from '@prisma/client';
+import prisma from '../index';
+import { ProductCreateDto, ProductUpdateDto } from '../dtos/ProductDto';
 
 class ProductsController {
     private productService: ProductService;
@@ -11,7 +13,7 @@ class ProductsController {
 
     createProduct = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { name, description, price } = req.body;
+            const { name, description, price }: ProductCreateDto = req.body;
             const { user } = req;
 
             if (!user) {
@@ -120,7 +122,7 @@ class ProductsController {
     updateProduct = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { productId } = req.params;
-            const { name, description, price } = req.body;
+            const { name, description, price }: ProductUpdateDto = req.body;
             const { user } = req;
 
             if (!user) {

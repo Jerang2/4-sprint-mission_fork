@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import ArticleService from '../ArticleService';
 import { Article as PrismaArticle, Prisma } from '@prisma/client';
 import prisma from '../index';
+import { ArticleCreateDto, ArticleUpdateDto } from '../dtos/ArticleDto';
 
 class ArticlesController {
     private articleService: ArticleService;
@@ -12,7 +13,7 @@ class ArticlesController {
 
     createArticle = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { title, content } = req.body;
+            const { title, content }: ArticleCreateDto = req.body;
             const { user } = req;
 
             if (!user) {
@@ -120,7 +121,7 @@ class ArticlesController {
     updateArticle = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { articleId } = req.params;
-            const { title, content } = req.body;
+            const { title, content }: ArticleUpdateDto = req.body;
             const { user } = req;
 
             if (!user) {
