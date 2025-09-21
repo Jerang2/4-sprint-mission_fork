@@ -2,9 +2,11 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const { PrismaClient } = require('@prisma/client');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const prisma = new PrismaClient();
 
 // import router
 const productRouter = require('./routes/products.router.js');
@@ -34,4 +36,6 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`서버가 ${PORT}번에서 실행중입니다.`);
 });
+
+module.exports = prisma;
 

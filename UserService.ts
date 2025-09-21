@@ -2,9 +2,13 @@ const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const router = require('./routes/products.router');
+const prisma = require('./index.js');
 
 class UserService {    
-    prisma = new PrismaClient();
+    // prisma = new PrismaClient(); // Remove this line
+    constructor() {
+        this.prisma = prisma; // Use the imported prisma instance
+    }
 
     // 회원가입 로직
     signUp = async (email, nickname, password) => {

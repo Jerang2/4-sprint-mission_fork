@@ -1,11 +1,11 @@
 const express = require('express');
 const UserService = require('../UserService.js');
 const authMiddleware = require('../middlewares/auth.middleware.js');
-const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcrypt');
+const prisma = require('../index.js'); // Import prisma from index.js
 
 const router = express.Router();
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient(); // Remove this line
 const userService = new UserService();
 
 // 회원가입 API

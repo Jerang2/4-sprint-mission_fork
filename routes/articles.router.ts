@@ -1,8 +1,7 @@
 //adricle router
 const express = require('express');
 const router = express.Router();
-const { PrismaClient } =require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../index.js'); // Import prisma from index.js
 const { validateArticle } = require('../middlewares/validation.middleware.js');
 const authMiddleware = require('../middlewares/auth.middleware.js');
 const optionalAuthMiddleware = require('../middlewares/optionalAuth.middleware.js');
