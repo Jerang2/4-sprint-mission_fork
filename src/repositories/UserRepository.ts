@@ -21,6 +21,14 @@ class UserRepository {
   async deleteUser(id: number): Promise<PrismaUser> {
     return prisma.user.delete({ where: { id } });
   }
+
+  async findProductsByUserId(userId: number): Promise<Prisma.Product[] | null> {
+    const userWithProducts = await prisma.user.findUnique({
+        where: { id: userId },
+        include: { products: true },
+    });
+    return userWithProducts ? userWithProducts.products : null;
+  }
 }
 
 export default UserRepository;

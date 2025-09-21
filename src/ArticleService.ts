@@ -1,15 +1,9 @@
 import { Article as PrismaArticle, Prisma } from '@prisma/client';
 import ArticleRepository from './repositories/ArticleRepository';
+import { ArticleCreateDto, ArticleUpdateDto } from './dtos/ArticleDto';
 
-interface ArticleCreateInput {
-  title: string;
-  content: string;
+interface ArticleCreateServiceInput extends ArticleCreateDto {
   userId: number;
-}
-
-interface ArticleUpdateInput {
-  title?: string;
-  content?: string;
 }
 
 class ArticleService {
@@ -19,7 +13,7 @@ class ArticleService {
     this.articleRepository = articleRepository;
   }
 
-  async createArticle(data: ArticleCreateInput): Promise<PrismaArticle> {
+  async createArticle(data: ArticleCreateServiceInput): Promise<PrismaArticle> {
     return this.articleRepository.createArticle(data);
   }
 
@@ -31,7 +25,7 @@ class ArticleService {
     return this.articleRepository.findArticles(options);
   }
 
-  async updateArticle(id: number, data: ArticleUpdateInput): Promise<PrismaArticle> {
+  async updateArticle(id: number, data: ArticleUpdateDto): Promise<PrismaArticle> {
     return this.articleRepository.updateArticle(id, data);
   }
 

@@ -1,18 +1,9 @@
 import { Product as PrismaProduct, Prisma } from '@prisma/client';
 import ProductRepository from './repositories/ProductRepository';
+import { ProductCreateDto, ProductUpdateDto } from './dtos/ProductDto';
 
-interface ProductCreateInput {
-  name: string;
-  content: string;
-  price: number;
-  status?: string;
+interface ProductCreateServiceInput extends ProductCreateDto {
   userId: number;
-}
-
-interface ProductUpdateInput {
-  name?: string;
-  content?: string;
-  price?: number;
   status?: string;
 }
 
@@ -23,7 +14,7 @@ class ProductService {
     this.productRepository = productRepository;
   }
 
-  async createProduct(data: ProductCreateInput): Promise<PrismaProduct> {
+  async createProduct(data: ProductCreateServiceInput): Promise<PrismaProduct> {
     return this.productRepository.createProduct(data);
   }
 
@@ -35,7 +26,7 @@ class ProductService {
     return this.productRepository.findProducts(options);
   }
 
-  async updateProduct(id: number, data: ProductUpdateInput): Promise<PrismaProduct> {
+  async updateProduct(id: number, data: ProductUpdateDto): Promise<PrismaProduct> {
     return this.productRepository.updateProduct(id, data);
   }
 

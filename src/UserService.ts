@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { User as PrismaUser, Prisma } from '@prisma/client';
 import UserRepository from './repositories/UserRepository';
+import { UserCreateDto, UserUpdateDto } from './dtos/UserDto';
 
 interface UserWithoutPassword extends Omit<PrismaUser, 'password' | 'refreshToken'> {}
 
@@ -13,7 +14,8 @@ class UserService {
     }
 
     // 회원가입 로직
-    public signUp = async (email: string, nickname: string, password: string): Promise<UserWithoutPassword> => {
+    public signUp = async (userData: UserCreateDto): Promise<UserWithoutPassword> => {
+        const { email, nickname, password } = userData;
         
         // 이메일 중복 확인
         const existingUser = await this.userRepository.findUserByEmail(email);
@@ -75,7 +77,7 @@ class UserService {
         return this.userRepository.findUserById(id);
     };
 
-    public updateUser = async (id: number, data: Prisma.UserUpdateInput): Promise<PrismaUser> => {
+    public updateUser = async (id: number, data: UserUpdateDto): Promise<PrismaUser> => {
         return this.userRepository.updateUser(id, data);
     };
 
@@ -84,13 +86,7 @@ class UserService {
     };
 
     public getProductsByUserId = async (userId: number): Promise<Prisma.Product[] | null> => {
-        // This method will need to be implemented in UserRepository or a new ProductRepository method
-        // For now, directly using prisma for product related queries from user service
-        const userWithProducts = await prisma.user.findUnique({
-            where: { id: userId },
-            include: { products: true },
-        });
-        return userWithProducts ? userWithProducts.products : null;
+        return this.userRepository.findProductsByUserId(userId);
     };
 }
 
