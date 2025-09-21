@@ -6,7 +6,12 @@ class ProductRepository {
     return prisma.product.findUnique({ where: { id } });
   }
 
-  async findProducts(options?: { skip?: number; take?: number; where?: Prisma.ProductWhereInput; orderBy?: Prisma.ProductOrderByWithRelationInput }): Promise<PrismaProduct[]> {
+  async findProducts(options?: {
+    skip?: number;
+    take?: number;
+    where?: Prisma.ProductWhereInput;
+    orderBy?: Prisma.ProductOrderByWithRelationInput;
+  }): Promise<PrismaProduct[]> {
     return prisma.product.findMany(options);
   }
 

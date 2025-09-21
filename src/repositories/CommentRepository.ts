@@ -6,7 +6,12 @@ class CommentRepository {
     return prisma.comment.findUnique({ where: { id } });
   }
 
-  async findComments(options?: { skip?: number; take?: number; where?: Prisma.CommentWhereInput; orderBy?: Prisma.CommentOrderByWithRelationInput }): Promise<PrismaComment[]> {
+  async findComments(options?: {
+    skip?: number;
+    take?: number;
+    where?: Prisma.CommentWhereInput;
+    orderBy?: Prisma.CommentOrderByWithRelationInput;
+  }): Promise<PrismaComment[]> {
     return prisma.comment.findMany(options);
   }
 

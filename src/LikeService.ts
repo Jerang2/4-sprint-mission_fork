@@ -28,15 +28,26 @@ class LikeService {
     return this.likeRepository.deleteLike(id);
   }
 
-  async findLikeByUserIdAndProductId(userId: number, productId: number): Promise<PrismaLike | null> {
+  async findLikeByUserIdAndProductId(
+    userId: number,
+    productId: number,
+  ): Promise<PrismaLike | null> {
     return this.likeRepository.findLikeByUserIdAndProductId(userId, productId);
   }
 
-  async findLikeByUserIdAndArticleId(userId: number, articleId: number): Promise<PrismaLike | null> {
+  async findLikeByUserIdAndArticleId(
+    userId: number,
+    articleId: number,
+  ): Promise<PrismaLike | null> {
     return this.likeRepository.findLikeByUserIdAndArticleId(userId, articleId);
   }
 
-  async findLikes(options?: { skip?: number; take?: number; where?: Prisma.LikeWhereInput; orderBy?: Prisma.LikeOrderByWithRelationInput }): Promise<PrismaLike[]> {
+  async findLikes(options?: {
+    skip?: number;
+    take?: number;
+    where?: Prisma.LikeWhereInput;
+    orderBy?: Prisma.LikeOrderByWithRelationInput;
+  }): Promise<PrismaLike[]> {
     return this.likeRepository.findLikes(options);
   }
 }

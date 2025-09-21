@@ -9,8 +9,8 @@ const router = Router();
 
 //uploads 디렉토리가 없을 때 생성
 const uploadDir = 'uploads/';
-if (!fs.existsSync(uploadDir)){
-    fs.mkdirSync(uploadDir);
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
 }
 
 const storage = multer.memoryStorage();
@@ -20,5 +20,5 @@ const uploadController = new UploadController();
 
 //image api
 router.post('/upload', upload.single('image'), uploadController.uploadImage);
-   
+
 export default router;

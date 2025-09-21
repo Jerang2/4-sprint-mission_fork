@@ -24,8 +24,8 @@ class UserRepository {
 
   async findProductsByUserId(userId: number): Promise<Product[] | null> {
     const userWithProducts = await prisma.user.findUnique({
-        where: { id: userId },
-        include: { products: true },
+      where: { id: userId },
+      include: { products: true },
     });
     return userWithProducts ? userWithProducts.products : null;
   }

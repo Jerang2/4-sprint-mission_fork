@@ -21,10 +21,10 @@ router.get('/products', optionalAuthMiddleware, productsController.getProducts);
 
 // datail, modify, delete
 router
- .route('/products/:productId')
- .get(optionalAuthMiddleware, productsController.getProductById)
- .patch(validateProduct, authMiddleware, productsController.updateProduct)
- .delete(authMiddleware, productsController.deleteProduct);
+  .route('/products/:productId')
+  .get(optionalAuthMiddleware, productsController.getProductById)
+  .patch(validateProduct, authMiddleware, productsController.updateProduct)
+  .delete(authMiddleware, productsController.deleteProduct);
 
 // comment
 router.post('/products/:productId/comments', authMiddleware, productsController.createComment);

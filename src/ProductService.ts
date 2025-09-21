@@ -29,7 +29,12 @@ class ProductService {
     return this.productRepository.findProductById(id);
   }
 
-  async getProducts(options?: { skip?: number; take?: number; where?: Prisma.ProductWhereInput; orderBy?: Prisma.ProductOrderByWithRelationInput }): Promise<PrismaProduct[]> {
+  async getProducts(options?: {
+    skip?: number;
+    take?: number;
+    where?: Prisma.ProductWhereInput;
+    orderBy?: Prisma.ProductOrderByWithRelationInput;
+  }): Promise<PrismaProduct[]> {
     return this.productRepository.findProducts(options);
   }
 

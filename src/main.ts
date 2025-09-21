@@ -1,2 +1,2 @@
-import ProductService from "./ProductService";
-import ArticleService from "./ArticleService";
+import ProductService from './ProductService';
+import ArticleService from './ArticleService';

@@ -6,7 +6,12 @@ class ArticleRepository {
     return prisma.article.findUnique({ where: { id } });
   }
 
-  async findArticles(options?: { skip?: number; take?: number; where?: Prisma.ArticleWhereInput; orderBy?: Prisma.ArticleOrderByWithRelationInput }): Promise<PrismaArticle[]> {
+  async findArticles(options?: {
+    skip?: number;
+    take?: number;
+    where?: Prisma.ArticleWhereInput;
+    orderBy?: Prisma.ArticleOrderByWithRelationInput;
+  }): Promise<PrismaArticle[]> {
     return prisma.article.findMany(options);
   }
 

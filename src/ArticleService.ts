@@ -27,7 +27,12 @@ class ArticleService {
     return this.articleRepository.findArticleById(id);
   }
 
-  async getArticles(options?: { skip?: number; take?: number; where?: Prisma.ArticleWhereInput; orderBy?: Prisma.ArticleOrderByWithRelationInput }): Promise<PrismaArticle[]> {
+  async getArticles(options?: {
+    skip?: number;
+    take?: number;
+    where?: Prisma.ArticleWhereInput;
+    orderBy?: Prisma.ArticleOrderByWithRelationInput;
+  }): Promise<PrismaArticle[]> {
     return this.articleRepository.findArticles(options);
   }
 

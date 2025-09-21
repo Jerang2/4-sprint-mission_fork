@@ -21,7 +21,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-
 // route settitng
 app.use('/api', [productRouter, articleRouter, uploadRouter, usersRouter]);
 
@@ -33,10 +32,8 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.status(statusCode).json({ message });
 });
 
-
 app.listen(PORT, () => {
   console.log(`서버가 ${PORT}번에서 실행중입니다.`);
 });
 
 export default prisma;
-

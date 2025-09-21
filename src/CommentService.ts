@@ -33,7 +33,12 @@ class CommentService {
     return this.commentRepository.findCommentById(id);
   }
 
-  async getComments(options?: { skip?: number; take?: number; where?: Prisma.CommentWhereInput; orderBy?: Prisma.CommentOrderByWithRelationInput }): Promise<PrismaComment[]> {
+  async getComments(options?: {
+    skip?: number;
+    take?: number;
+    where?: Prisma.CommentWhereInput;
+    orderBy?: Prisma.CommentOrderByWithRelationInput;
+  }): Promise<PrismaComment[]> {
     return this.commentRepository.findComments(options);
   }
 

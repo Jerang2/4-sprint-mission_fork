@@ -13,23 +13,23 @@ const articleRepository = new ArticleRepository();
 const articleService = new ArticleService(articleRepository);
 const articlesController = new ArticlesController(articleService);
 
-//article registration 
+//article registration
 router
- .route('/articles')
- .post(authMiddleware, validateArticle, articlesController.createArticle)
+  .route('/articles')
+  .post(authMiddleware, validateArticle, articlesController.createArticle)
   // 게시글 목록 조회
- .get(optionalAuthMiddleware, articlesController.getArticles);
+  .get(optionalAuthMiddleware, articlesController.getArticles);
 
 // article detail, modify, delete
 router
- .route('/articles/:articleId')
- .get(optionalAuthMiddleware, articlesController.getArticleById)
- .patch(authMiddleware, validateArticle, articlesController.updateArticle)
- .delete(authMiddleware, articlesController.deleteArticle);
+  .route('/articles/:articleId')
+  .get(optionalAuthMiddleware, articlesController.getArticleById)
+  .patch(authMiddleware, validateArticle, articlesController.updateArticle)
+  .delete(authMiddleware, articlesController.deleteArticle);
 
-// article comment creation 
+// article comment creation
 router.post('/articles/:articleId/comments', authMiddleware, articlesController.createComment);
-   
+
 // article comments check
 router.get('/articles/:articleId/comments', articlesController.getComments);
 
@@ -41,5 +41,5 @@ router.delete('/articles/comments/:commentId', authMiddleware, articlesControlle
 
 // 게시글 좋아요 API
 router.post('/:articleId/like', authMiddleware, articlesController.toggleLike);
-     
+
 export default router;
