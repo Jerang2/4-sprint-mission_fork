@@ -35,6 +35,10 @@ class LikeService {
   async findLikeByUserIdAndArticleId(userId: number, articleId: number): Promise<PrismaLike | null> {
     return this.likeRepository.findLikeByUserIdAndArticleId(userId, articleId);
   }
+
+  async findLikes(options?: { skip?: number; take?: number; where?: Prisma.LikeWhereInput; orderBy?: Prisma.LikeOrderByWithRelationInput }): Promise<PrismaLike[]> {
+    return this.likeRepository.findLikes(options);
+  }
 }
 
 export default LikeService;
