@@ -62,7 +62,6 @@ class ProductsController {
             const user = req.user;
             const products = await this.productService.getProducts({
                 where,
-                select: { id: true, name: true, content: true, price: true, createdAt: true, userId: true, updatedAt: true, status: true },
                 orderBy: sort === 'recent' ? { createdAt: 'desc' } : undefined,
                 skip: offset,
                 take: limit,

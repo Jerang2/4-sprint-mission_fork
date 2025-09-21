@@ -60,7 +60,6 @@ class ArticlesController {
             const user = req.user;
             const articles = await this.articleService.getArticles({
             where,
-            select: { id: true, title: true, content: true, createdAt: true, userId: true, updatedAt: true },
             orderBy: sort === 'recent' ? { createdAt: 'desc' } : undefined,
             skip: offset,
             take: limit,
