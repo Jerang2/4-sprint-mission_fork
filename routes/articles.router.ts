@@ -50,7 +50,7 @@ router
         const user = req.user;
         const articles = await prisma.article.findMany({
         where,
-        select: { id: true, title: true, content: true, createdAt: true, userId: true },
+        select: { id: true, title: true, content: true, createdAt: true, userId: true, updatedAt: true },
         orderBy: sort === 'recent' ? { createdAt: 'desc' } : undefined,
         skip: offset,
         take: limit,
@@ -96,7 +96,7 @@ router
 
         const article = await prisma.article.findUnique({
             where: { id: parseInt(articleId) },
-            select: { id: true, title: true, content: true, createdAt: true, userId: true },
+            select: { id: true, title: true, content: true, createdAt: true, userId: true, updatedAt: true },
         });
 
         if (!article) {
