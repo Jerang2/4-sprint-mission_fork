@@ -50,7 +50,7 @@ router.get('/products', optionalAuth_middleware_1.default, async (req, res, next
         const user = req.user;
         const products = await index_1.default.product.findMany({
             where,
-            select: { id: true, name: true, price: true, createdAt: true, userId: true, updatedAt: true },
+            select: { id: true, name: true, content: true, createdAt: true, userId: true, updatedAt: true, status: true },
             orderBy: sort === 'recent' ? { createdAt: 'desc' } : undefined,
             skip: offset,
             take: limit,
@@ -94,8 +94,7 @@ router
         const user = req.user;
         const product = await index_1.default.product.findUnique({
             where: { id: parseInt(productId) },
-            select: { id: true, name: true, description: true, price: true,
-                createdAt: true, userId: true, updatedAt: true },
+            select: { id: true, name: true, content: true, createdAt: true, userId: true, updatedAt: true, status: true },
         });
         if (!product)
             return res.status(404).json({ message: '상품을 찾을수 없습니다.' });

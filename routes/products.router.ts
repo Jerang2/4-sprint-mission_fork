@@ -23,7 +23,7 @@ router.post('/products', authMiddleware, validateProduct, async (req: Request, r
                 content: description, // Map description to content
                 price,
                 userId: user.id,
-            } as Prisma.ProductCreateInput,
+            } as Prisma.ProductUncheckedCreateInput,
         });
         res.status(201).json(product);
     }   catch(error) {
@@ -52,7 +52,7 @@ router.get('/products', optionalAuthMiddleware, async (req: Request, res: Respon
         const user = req.user;
         const products = await prisma.product.findMany({
             where,
-            select: { id: true, name: true, content: true, price: true, createdAt: true, userId: true, updatedAt: true },
+            select: { id: true, name: true, content: true, createdAt: true, userId: true, updatedAt: true, status: true },
             orderBy: sort === 'recent' ? { createdAt: 'desc' } : undefined,
             skip: offset,
             take: limit,
@@ -103,8 +103,7 @@ router
 
         const product = await prisma.product.findUnique({
             where: { id: parseInt(productId) },
-            select: { id: true, name: true, content: true, price: true,
-                createdAt: true, userId: true, updatedAt: true },
+            select: { id: true, name: true, content: true, createdAt: true, userId: true, updatedAt: true, status: true },
             });
 
             if (!product) return res.status(404).json({ message: '상품을 찾을수 없습니다.'});
@@ -149,7 +148,7 @@ router
 
                 const updatedProduct = await prisma.product.update({
                     where: { id: parseInt(productId) },
-                    data: { name, content: description, price },
+                    data: { name, content: description, price } as Prisma.ProductUpdateInput,
                 });
                 res.status(200).json(updatedProduct);
             }   catch (error) {
