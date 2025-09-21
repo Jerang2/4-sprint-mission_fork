@@ -2,6 +2,9 @@ import prisma from './index';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { User as PrismaUser } from '@prisma/client';
+import { Request, Response, NextFunction } from 'express';
+import authMiddleware from './middlewares/auth.middleware';
+import cookieParser from 'cookie-parser';
 
 interface UserWithoutPassword extends Omit<PrismaUser, 'password' | 'refreshToken'> {}
 
