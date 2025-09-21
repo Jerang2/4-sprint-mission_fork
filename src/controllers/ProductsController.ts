@@ -140,7 +140,7 @@ class ProductsController {
 
             const updatedProduct = await this.productService.updateProduct(parseInt(productId), {
                 name,
-                content: description,
+                description,
                 price,
             });
             res.status(200).json(updatedProduct);
@@ -202,7 +202,6 @@ class ProductsController {
             const comments = await this.commentService.getComments({
                 where: { productId: parseInt(productId) },
                 orderBy: { createdAt: 'desc' },
-                cursor: cursor ? { id: cursor } : undefined,
                 take: limit,
                 skip: cursor ? 1 : 0,
             });
