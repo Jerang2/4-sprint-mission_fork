@@ -15,7 +15,13 @@ class LikeService {
   }
 
   async createLike(data: LikeCreateInput): Promise<PrismaLike> {
-    return this.likeRepository.createLike(data);
+    const { userId, productId, articleId, ...rest } = data;
+    return this.likeRepository.createLike({
+      ...rest,
+      user: { connect: { id: userId } },
+      ...(productId && { product: { connect: { id: productId } } }),
+      ...(articleId && { article: { connect: { id: articleId } } }),
+    });
   }
 
   async deleteLike(id: number): Promise<PrismaLike> {

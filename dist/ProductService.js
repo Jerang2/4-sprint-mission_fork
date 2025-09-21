@@ -1,24 +1,23 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const index_1 = __importDefault(require("./index"));
 class ProductService {
+    constructor(productRepository) {
+        this.productRepository = productRepository;
+    }
     async createProduct(data) {
-        return index_1.default.product.create({ data });
+        return this.productRepository.createProduct(data);
     }
     async getProductById(id) {
-        return index_1.default.product.findUnique({ where: { id } });
+        return this.productRepository.findProductById(id);
     }
     async getProducts(options) {
-        return index_1.default.product.findMany(options);
+        return this.productRepository.findProducts(options);
     }
     async updateProduct(id, data) {
-        return index_1.default.product.update({ where: { id }, data });
+        return this.productRepository.updateProduct(id, data);
     }
     async deleteProduct(id) {
-        return index_1.default.product.delete({ where: { id } });
+        return this.productRepository.deleteProduct(id);
     }
 }
 exports.default = ProductService;

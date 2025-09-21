@@ -2,7 +2,9 @@ import { Article as PrismaArticle, Prisma } from '@prisma/client';
 import ArticleRepository from './repositories/ArticleRepository';
 import { ArticleCreateDto, ArticleUpdateDto } from './dtos/ArticleDto';
 
-interface ArticleCreateServiceInput extends ArticleCreateDto {
+interface ArticleCreateServiceInput {
+  title: string;
+  content: string;
   userId: number;
 }
 
@@ -14,7 +16,11 @@ class ArticleService {
   }
 
   async createArticle(data: ArticleCreateServiceInput): Promise<PrismaArticle> {
-    return this.articleRepository.createArticle(data);
+    const { userId, ...rest } = data;
+    return this.articleRepository.createArticle({
+      ...rest,
+      user: { connect: { id: userId } },
+    });
   }
 
   async getArticleById(id: number): Promise<PrismaArticle | null> {

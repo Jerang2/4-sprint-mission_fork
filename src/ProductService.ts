@@ -2,7 +2,10 @@ import { Product as PrismaProduct, Prisma } from '@prisma/client';
 import ProductRepository from './repositories/ProductRepository';
 import { ProductCreateDto, ProductUpdateDto } from './dtos/ProductDto';
 
-interface ProductCreateServiceInput extends ProductCreateDto {
+interface ProductCreateServiceInput {
+  name: string;
+  content: string;
+  price: number;
   userId: number;
   status?: string;
 }
@@ -15,7 +18,11 @@ class ProductService {
   }
 
   async createProduct(data: ProductCreateServiceInput): Promise<PrismaProduct> {
-    return this.productRepository.createProduct(data);
+    const { userId, ...rest } = data;
+    return this.productRepository.createProduct({
+      ...rest,
+      user: { connect: { id: userId } },
+    });
   }
 
   async getProductById(id: number): Promise<PrismaProduct | null> {

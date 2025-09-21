@@ -20,7 +20,13 @@ class CommentService {
   }
 
   async createComment(data: CommentCreateInput): Promise<PrismaComment> {
-    return this.commentRepository.createComment(data);
+    const { userId, productId, articleId, ...rest } = data;
+    return this.commentRepository.createComment({
+      ...rest,
+      user: { connect: { id: userId } },
+      ...(productId && { product: { connect: { id: productId } } }),
+      ...(articleId && { article: { connect: { id: articleId } } }),
+    });
   }
 
   async getCommentById(id: number): Promise<PrismaComment | null> {
