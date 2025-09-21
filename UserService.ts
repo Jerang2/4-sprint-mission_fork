@@ -1,17 +1,15 @@
-const { PrismaClient } = require('@prisma/client');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const router = require('./routes/products.router');
-const prisma = require('./index.js');
+import prisma from './index';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { User as PrismaUser } from '@prisma/client';
 
-class UserService {    
-    // prisma = new PrismaClient(); // Remove this line
-    constructor() {
-        this.prisma = prisma; // Use the imported prisma instance
-    }
+interface UserWithoutPassword extends Omit<PrismaUser, 'password' | 'refreshToken'> {}
+
+class UserService {
+    private prisma = prisma;
 
     // 회원가입 로직
-    signUp = async (email, nickname, password) => {
+    public signUp = async (email: string, nickname: string, password: string): Promise<UserWithoutPassword> => {
         
         // 이메일 중복 확인
         const existingUser = await this.prisma.user.findUnique({ where: { email } });
@@ -32,11 +30,11 @@ class UserService {
         });
 
         // 사용자 정보 반환
-        const { password: _, ...userWithoutPassword } = user;
+        const { password: _, refreshToken: __, ...userWithoutPassword } = user;
         return userWithoutPassword;
     };
 
-    signIn = async (email, password) => {
+    public signIn = async (email: string, password: string): Promise<{ accessToken: string; refreshToken: string }> => {
         // 이메일로 사용자 조회
         const user = await this.prisma.user.findUnique({ where: { email } });
         if (!user) {
@@ -52,14 +50,14 @@ class UserService {
         // Access Token 생성 (12시간)
         const accessToken = jwt.sign(
             { userId: user.id },
-            process.env.JWT_SECRET_KEY,
+            process.env.JWT_SECRET_KEY as string,
             { expiresIn: '12h' }
         );
 
         // Refresh Token 생성 (7일)
         const refreshToken = jwt.sign(
             { userId: user.id },
-            process.env.REFRESH_TOKEN_SECRET_KEY,
+            process.env.REFRESH_TOKEN_SECRET_KEY as string,
             { expiresIn: '7d' }
         );
 
@@ -69,47 +67,8 @@ class UserService {
             data: { refreshToken: await bcrypt.hash(refreshToken, 10) },
         });
 
-        // Token 재발급 API
-        router.post('/token/refresh', async (req, res, next) => {
-            try {
-                const { refreshToken } = req.cookies;
-                if (!refreshToken) {
-                    return res.status(401).json({ message: 'Refresh Token이 없습니다.' });
-                }
-
-                const decodedToken = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET_KEY);
-                const userId = decodedToken.userId;
-
-                const user = await this.prisma.user.findUnique({ where: { id: userId } });
-                if (!user) {
-                    return res.status(401).json({ message: '사용자를 찾을 수 없습니다.' });
-                }
-
-                //DB에 저장된 hashed Refresh Token과 비교
-                const isRefreshTokenMatched = await bcrypt.compare(refreshToken, user.refreshToken);
-                if (!isRefreshTokenMatched) {
-                    return res.status(401).json({ message: 'Refresh Token이 유효하지 않습니다.' });
-                }
-
-                // 새로운 Access Token 생성
-                const newAccessToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET_KEY, {
-                    expiresIn: '12h',
-                });
-
-                return res.status(200).json({
-                    message: 'Access Token이 재발급되었습니다.',
-                    data: { accessToke, newAccessToken },
-                });
-            } catch (error) {
-                if (error.name === 'TokenExpiredError' || error.name === 'JsonWebTokenError') {
-                    return res.status(401).json({ message: 'Refresh Token이 만료되었거나 유효하지 않습니다. 다시 로그인해주세요 '});
-                }
-                next(error);
-            }
-        });
-
-        return { accessToke, refreshToken };
-    }
+        return { accessToken, refreshToken };
+    };
 }
 
-module.exports = UserService;
+export default UserService;

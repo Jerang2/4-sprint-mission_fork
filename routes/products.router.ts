@@ -1,16 +1,22 @@
-// product router
-const express = require('express');
-const router = express.Router();
-const prisma = require('../index.js'); // Import prisma from index.js
-const { validationProduct, validateProduct } = require('../middlewares/validation.middleware.js');
-const authMiddleware = require('../middlewares/auth.middleware.js');
-const optionalAuthMiddleware = require('../middlewares/optionalAuth.middleware.js');
+import { Router, Request, Response, NextFunction } from 'express';
+import prisma from '../index'; // Import prisma from index.ts
+import { validationProduct, validateProduct } from '../middlewares/validation.middleware';
+import authMiddleware from '../middlewares/auth.middleware';
+import optionalAuthMiddleware from '../middlewares/optionalAuth.middleware';
+import { Product as PrismaProduct, Prisma } from '@prisma/client';
+
+const router = Router();
 
 // registration router
-router.post('/products', authMiddleware, validateProduct, async (req, res, next) => {
+router.post('/products', authMiddleware, validateProduct, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { name, description, price } = req.body;
         const { user } = req;
+
+        if (!user) {
+            return res.status(401).json({ message: '사용자 정보를 찾을 수 없습니다.' });
+        }
+
         const product = await prisma.product.create({
             data: {
                 name,
@@ -26,14 +32,14 @@ router.post('/products', authMiddleware, validateProduct, async (req, res, next)
 })
 
 // cherck router
-router.get('/products', optionalAuthMiddleware, async (req, res, next) => {
+router.get('/products', optionalAuthMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { sort, search } = req.query;
-        let page = parseInt(req.query.page) || 1;
-        let limit = parseInt(req.query.limit) || 10;
+        const { sort, search } = req.query as { sort?: string; search?: string };
+        let page = parseInt(req.query.page as string) || 1;
+        let limit = parseInt(req.query.limit as string) || 10;
         let offset = (page - 1) * limit;
 
-        const where = search
+        const where: Prisma.ProductWhereInput = search
         ? {
             OR: [
                 { name: { contains: search, mode: 'insensitive' }},
@@ -52,7 +58,7 @@ router.get('/products', optionalAuthMiddleware, async (req, res, next) => {
             take: limit,
         });
 
-        let responseProducts = products;
+        let responseProducts: (PrismaProduct & { isLiked?: boolean })[] = products;
 
         if (user) {
             // 로그인한 사용자의 좋아요 누른 상품 목록 조회
@@ -90,7 +96,7 @@ router.get('/products', optionalAuthMiddleware, async (req, res, next) => {
 // datail, modify, delete
 router
  .route('/products/:productId')
- .get(optionalAuthMiddleware, async (req, res, next) => {
+ .get(optionalAuthMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { productId } = req.params;
         const user = req.user;
@@ -125,11 +131,15 @@ router
     })
     
 
-        .patch(validateProduct, authMiddleware, async (req, res, next) => {
+        .patch(validateProduct, authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
             try {
                 const { productId } = req.params;
                 const { name, description, price } = req.body;
                 const { user } = req;
+
+                if (!user) {
+                    return res.status(401).json({ message: '사용자 정보를 찾을 수 없습니다.' });
+                }
 
                 // 상품 소유자 확인
                 const product = await prisma.product.findUnique({ where: { id: parseInt(productId) } });
@@ -146,10 +156,14 @@ router
                 next(error);
             }
         })
-        .delete(authMiddleware, async (req, res, next) => {
+        .delete(authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
             try {
                 const { productId } = req.params;
                 const { user } = req;
+
+                if (!user) {
+                    return res.status(401).json({ message: '사용자 정보를 찾을 수 없습니다.' });
+                }
 
                 const product = await prisma.product.findUnique({ where: { id: parseInt(productId) } });
                 if (!product || product.userId !== user.id) {
@@ -164,11 +178,15 @@ router
         });
 
 // comment
-router.post('/products/:productId/comments', authMiddleware,  async (req, res, next) => {
+router.post('/products/:productId/comments', authMiddleware,  async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { productId } = req.params;
         const { content } = req.body
         const { user } = req;
+
+        if (!user) {
+            return res.status(401).json({ message: '사용자 정보를 찾을 수 없습니다.' });
+        }
 
         if (!content) return res.status(400).json({ message: '댓글을 입력해주세요.' });
 
@@ -186,11 +204,11 @@ router.post('/products/:productId/comments', authMiddleware,  async (req, res, n
 });
 
 //comment check
-router.get('/products/:productId/comments', async (req, res, next) => {
+router.get('/products/:productId/comments', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { productId } = req.params;
-        let cursor = req.query.cursor ? parseInt(req.query.cursor): undefined;
-        let limit = parseInt(req.query.limit) || 10;
+        let cursor = req.query.cursor ? parseInt(req.query.cursor as string): undefined;
+        let limit = parseInt(req.query.limit as string) || 10;
 
         const comments = await prisma.comment.findMany({
             where: { productId: parseInt(productId) },
@@ -207,11 +225,15 @@ router.get('/products/:productId/comments', async (req, res, next) => {
 });
 
 // comment modify
-router.patch('/products/comments/:commentId', authMiddleware, async (req, res, next) => {
+router.patch('/products/comments/:commentId', authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { commentId } = req.params;
         const { content } = req.body;
         const { user } = req;
+
+        if (!user) {
+            return res.status(401).json({ message: '사용자 정보를 찾을 수 없습니다.' });
+        }
 
         if (!content) return res.status(400).json({ message: '수정할 내용을 입력해주세요.'});
 
@@ -232,10 +254,14 @@ router.patch('/products/comments/:commentId', authMiddleware, async (req, res, n
 });
 
 // comment delete
-router.delete('/products/comments/:commentId', authMiddleware, async (req, res, next) => {
+router.delete('/products/comments/:commentId', authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { commentId } = req.params;
         const { user } = req;
+
+        if (!user) {
+            return res.status(401).json({ message: '사용자 정보를 찾을 수 없습니다.' });
+        }
 
         const existingComment = await prisma.comment.findUnique({ where: { id: parseInt(commentId) } });
         if (!existingComment || existingComment.userId !== user.id) {
@@ -250,10 +276,14 @@ router.delete('/products/comments/:commentId', authMiddleware, async (req, res, 
 });
 
 // 상품 좋아요 API
-router.post('/:productId/like', authMiddleware, async (req, res, next) => {
+router.post('/:productId/like', authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { productId } = req.params;
         const { user } = req;
+
+        if (!user) {
+            return res.status(401).json({ message: '사용자 정보를 찾을 수 없습니다.' });
+        }
 
         // 상품 존재 확인
         const product = await prisma.product.findUnique({ where: { id: parseInt(productId) } });
@@ -290,4 +320,4 @@ router.post('/:productId/like', authMiddleware, async (req, res, next) => {
         }
     });
 
-module.exports = router;
+export default router;

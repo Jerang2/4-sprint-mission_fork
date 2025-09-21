@@ -6,7 +6,7 @@ import {
   createProduct,
   patchProduct,
   deleteProduct,
-} from "./ProductService.js";
+} from "./ProductService";
 
 import {
   Article,
@@ -15,4 +15,4 @@ import {
   createArticle,
   patchArticle,
   deleteArticle,
-} from "./ArticleService.js";
+} from "./ArticleService";

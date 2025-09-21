@@ -1,18 +1,23 @@
-//adricle router
-const express = require('express');
-const router = express.Router();
-const prisma = require('../index.js'); // Import prisma from index.js
-const { validateArticle } = require('../middlewares/validation.middleware.js');
-const authMiddleware = require('../middlewares/auth.middleware.js');
-const optionalAuthMiddleware = require('../middlewares/optionalAuth.middleware.js');
+import { Router, Request, Response, NextFunction } from 'express';
+import prisma from '../index'; // Import prisma from index.ts
+import { validateArticle } from '../middlewares/validation.middleware';
+import authMiddleware from '../middlewares/auth.middleware';
+import optionalAuthMiddleware from '../middlewares/optionalAuth.middleware';
+import { Article as PrismaArticle, Prisma } from '@prisma/client';
+
+const router = Router();
 
 //article registration 
 router
  .route('/articles')
- .post(authMiddleware, validateArticle, async (req, res, next) => {
+ .post(authMiddleware, validateArticle, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { title, content } = req.body;
         const { user } = req;
+
+        if (!user) {
+            return res.status(401).json({ message: '사용자 정보를 찾을 수 없습니다.' });
+        }
 
         const article = await prisma.article.create({ data: { 
             title,
@@ -26,14 +31,14 @@ router
     }
 })
   // 게시글 목록 조회
- .get(optionalAuthMiddleware, async (req, res, next) => {
+ .get(optionalAuthMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { sort, search } = req.query;
-        let page = parseInt(req.query.page) || 1;
-        let limit = parseInt(req.query.limit) || 10;
+        const { sort, search } = req.query as { sort?: string; search?: string };
+        let page = parseInt(req.query.page as string) || 1;
+        let limit = parseInt(req.query.limit as string) || 10;
         let offset = (page - 1) * limit;
 
-        const where = search
+        const where: Prisma.ArticleWhereInput = search
           ? {
             OR: [
                 { title: { contains: search, mode: 'insensitive' }},
@@ -51,7 +56,7 @@ router
         take: limit,
         });
 
-        let responseArticle = articles;
+        let responseArticles: (PrismaArticle & { isLiked?: boolean })[] = articles;
 
         if (user) {
         const articleIds = articles.map(article => article.id);
@@ -84,7 +89,7 @@ router
 // article detail, modify, delete
 router
  .route('/articles/:articleId')
- .get(optionalAuthMiddleware, async (req, res, next) => {
+ .get(optionalAuthMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { articleId } = req.params;
         const user = req.user;
@@ -119,14 +124,22 @@ router
     }
 })
 
- .patch(authMiddleware, validateArticle, async (req, res, next) => {
+ .patch(authMiddleware, validateArticle, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { articleId } = req.params;
         const { title, content } = req.body;
         const { user } = req;
 
+        if (!user) {
+            return res.status(401).json({ message: '사용자 정보를 찾을 수 없습니다.' });
+        }
+
         // 게시글 소유 확인
         const article = await prisma.article.findUnique({ where: { id: parseInt(articleId) } });
+        if (!article || article.userId !== user.id) {
+            return res.status(403).json({ message: '게시글 수정 권한이 없습니다.' });
+        }
+
         const updatedArticle = await prisma.article.update({
             where: { id: parseInt(articleId) },
             data: { title, content },
@@ -136,10 +149,14 @@ router
         next(error);
     }
 })
- .delete(authMiddleware, async (req, res, next) => {
+ .delete(authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { articleId } = req.params;
         const { user } = req;
+
+        if (!user) {
+            return res.status(401).json({ message: '사용자 정보를 찾을 수 없습니다.' });
+        }
 
         const article = await prisma.article.findUnique({ where: { id: parseInt(articleId) } });
         if (!article || article.userId !== user.id) {
@@ -154,11 +171,15 @@ router
     });
 
 // article comment creation 
-router.post('/articles/:articleId/comments', authMiddleware, async (req, res, next) => {
+router.post('/articles/:articleId/comments', authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { articleId } = req.params;
         const { content } = req.body;
         const { user } = req;
+
+        if (!user) {
+            return res.status(401).json({ message: '사용자 정보를 찾을 수 없습니다.' });
+        }
 
         if (!content) return res.status(400).json({ message: '댓글을 입력해주세요.'});
         
@@ -176,11 +197,11 @@ router.post('/articles/:articleId/comments', authMiddleware, async (req, res, ne
 });
    
 // article comments check
-router.get('/articles/:articleId/comments', async (req, res, next) => {
+router.get('/articles/:articleId/comments', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { articleId } = req.params;
-        let cursor = req.query.cursor ? parseInt(req.query.cursor): undefined;
-        let limit = parseInt(req.query.limit) || 10;
+        let cursor = req.query.cursor ? parseInt(req.query.cursor as string): undefined;
+        let limit = parseInt(req.query.limit as string) || 10;
 
         const comments = await prisma.comment.findMany({
             where: { articleId: parseInt(articleId) },
@@ -197,11 +218,15 @@ router.get('/articles/:articleId/comments', async (req, res, next) => {
 });
 
 //article comment modify
-router.patch('/articles/comments/:commentId', authMiddleware, async (req, res, next) => {
+router.patch('/articles/comments/:commentId', authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { commentId } = req.params;
         const { content } = req.body;
         const { user } = req;
+
+        if (!user) {
+            return res.status(401).json({ message: '사용자 정보를 찾을 수 없습니다.' });
+        }
 
         if (!content) return res.status(400).json({ message: '수정할 내용을 입력하세요.' });
 
@@ -222,10 +247,14 @@ router.patch('/articles/comments/:commentId', authMiddleware, async (req, res, n
 });
 
 //article comment delete
-router.delete('/articles/comments/:commentId', authMiddleware, async (req, res, next) => {
+router.delete('/articles/comments/:commentId', authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { commentId } = req.params;
         const { user } = req;
+
+        if (!user) {
+            return res.status(401).json({ message: '사용자 정보를 찾을 수 없습니다.' });
+        }
 
         const comment = await prisma.comment.findUnique({ where: { id: parseInt(commentId) } });
         if (!comment || comment.userId !== user.id) {
@@ -240,10 +269,14 @@ router.delete('/articles/comments/:commentId', authMiddleware, async (req, res, 
 });
 
 // 게시글 좋아요 API
-router.post('/:articleId/like', authMiddleware, async (req, res, next) => {
+router.post('/:articleId/like', authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { articleId } = req.params;
         const { user } = req;
+
+        if (!user) {
+            return res.status(401).json({ message: '사용자 정보를 찾을 수 없습니다.' });
+        }
 
         // 게시글 존재 확인
         const article = await prisma.article.findUnique({ where: { id: parseInt(articleId) } });
@@ -280,4 +313,4 @@ router.post('/:articleId/like', authMiddleware, async (req, res, next) => {
     }
 });
      
-module.exports = router;
+export default router;

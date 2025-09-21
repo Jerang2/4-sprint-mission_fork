@@ -1,11 +1,10 @@
-//upload route
-const express = require('express');
-const router = express.Router();
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const sharp = require('sharp');
-const { DESTRUCTION } = require('dns');
+import { Router, Request, Response, NextFunction } from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import sharp from 'sharp';
+
+const router = Router();
 
 //uploads 디렉토리가 없을 때 생성
 const uploadDir = 'uploads/';
@@ -19,7 +18,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 //image api
-router.post('/upload', upload.single('image'), async(req, res, next) => {
+router.post('/upload', upload.single('image'), async(req: Request, res: Response, next: NextFunction) => {
     if (!req.file) {
         return res.status(400).json({ message: '이미지 파일이 필요합니다.'});
     }
@@ -40,4 +39,4 @@ router.post('/upload', upload.single('image'), async(req, res, next) => {
     }
 });
    
-module.exports = router;
+export default router;
