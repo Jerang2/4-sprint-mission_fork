@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import ProductService from '../ProductService';
-import { Product as PrismaProduct, Prisma } from '@prisma/client';
+import { Product as PrismaProduct, Prisma, Like } from '@prisma/client';
 import prisma from '../index';
 import { ProductCreateDto, ProductUpdateDto } from '../dtos/ProductDto';
 import CommentService from '../CommentService';
