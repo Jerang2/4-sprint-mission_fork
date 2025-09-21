@@ -22,5 +22,8 @@ class LikeService {
     async findLikeByUserIdAndArticleId(userId, articleId) {
         return this.likeRepository.findLikeByUserIdAndArticleId(userId, articleId);
     }
+    async findLikes(options) {
+        return this.likeRepository.findLikes(options);
+    }
 }
 exports.default = LikeService;

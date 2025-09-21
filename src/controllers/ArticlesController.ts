@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import ArticleService from '../ArticleService';
-import { Article as PrismaArticle, Prisma } from '@prisma/client';
+import { Article as PrismaArticle, Prisma, Like } from '@prisma/client';
 import prisma from '../index';
 import { ArticleCreateDto, ArticleUpdateDto } from '../dtos/ArticleDto';
 import CommentService from '../CommentService';

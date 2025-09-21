@@ -44,7 +44,6 @@ class ArticlesController {
                 const user = req.user;
                 const articles = await this.articleService.getArticles({
                     where,
-                    select: { id: true, title: true, content: true, createdAt: true, userId: true, updatedAt: true },
                     orderBy: sort === 'recent' ? { createdAt: 'desc' } : undefined,
                     skip: offset,
                     take: limit,
@@ -58,7 +57,7 @@ class ArticlesController {
                             articleId: { in: articleIds },
                         },
                     });
-                    const likedArticleIds = new Set(likes.map(like => like.articleId));
+                    const likedArticleIds = new Set(likes.map((like) => like.articleId));
                     responseArticles = articles.map(article => ({
                         ...article,
                         isLiked: likedArticleIds.has(article.id),
@@ -166,7 +165,6 @@ class ArticlesController {
                 let limit = parseInt(req.query.limit) || 10;
                 const comments = await this.commentService.getComments({
                     where: { articleId: parseInt(articleId) },
-                    select: { id: true, content: true, createdAt: true, userId: true },
                     orderBy: { createdAt: 'desc' },
                     cursor: cursor ? { id: cursor } : undefined,
                     take: limit,

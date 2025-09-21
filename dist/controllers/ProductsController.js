@@ -46,7 +46,6 @@ class ProductsController {
                 const user = req.user;
                 const products = await this.productService.getProducts({
                     where,
-                    select: { id: true, name: true, content: true, price: true, createdAt: true, userId: true, updatedAt: true, status: true },
                     orderBy: sort === 'recent' ? { createdAt: 'desc' } : undefined,
                     skip: offset,
                     take: limit,
@@ -60,7 +59,7 @@ class ProductsController {
                             productId: { in: productIds },
                         },
                     });
-                    const likedProductIds = new Set(likes.map(like => like.productId));
+                    const likedProductIds = new Set(likes.map((like) => like.productId));
                     responseProducts = products.map(product => ({
                         ...product,
                         isLiked: likedProductIds.has(product.id),
@@ -168,7 +167,6 @@ class ProductsController {
                 let limit = parseInt(req.query.limit) || 10;
                 const comments = await this.commentService.getComments({
                     where: { productId: parseInt(productId) },
-                    select: { id: true, content: true, createdAt: true, userId: true },
                     orderBy: { createdAt: 'desc' },
                     cursor: cursor ? { id: cursor } : undefined,
                     take: limit,

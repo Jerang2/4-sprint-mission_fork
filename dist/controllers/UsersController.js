@@ -13,7 +13,7 @@ class UsersController {
                 if (!email || !nickname || !password) {
                     return res.status(400).json({ message: '모든 정보를 입력해주세요' });
                 }
-                const newUser = await this.userService.signUp(email, nickname, password);
+                const newUser = await this.userService.signUp({ email, nickname, password });
                 return res.status(201).json({
                     message: '회원가입이 완료되었습니다.',
                     data: newUser,
