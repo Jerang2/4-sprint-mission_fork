@@ -85,7 +85,7 @@ class UserService {
         return this.userRepository.updateUser(id, { password: newPasswordHash });
     };
 
-    public getProductsByUserId = async (userId: number): Promise<Prisma.Product[] | null> => {
+    public getProductsByUserId = async (userId: number): Promise<Product[] | null> => {
         return this.userRepository.findProductsByUserId(userId);
     };
 }

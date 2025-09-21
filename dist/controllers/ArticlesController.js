@@ -166,7 +166,6 @@ class ArticlesController {
                 const comments = await this.commentService.getComments({
                     where: { articleId: parseInt(articleId) },
                     orderBy: { createdAt: 'desc' },
-                    cursor: cursor ? { id: cursor } : undefined,
                     take: limit,
                     skip: cursor ? 1 : 0,
                 });
