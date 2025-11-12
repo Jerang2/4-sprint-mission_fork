@@ -65,18 +65,37 @@ model Like {
 }
 
 model User {
-  id           Int       @id @default(autoincrement())
-  email        String    @unique
-  password     String
-  nickname     String
-  image        String?
-  refreshToken String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  products     Product[]
-  articles     Article[]
-  comments     Comment[]
-  likes        Like[]
+  id            Int            @id @default(autoincrement())
+  email         String         @unique
+  password      String
+  nickname      String
+  image         String?
+  refreshToken  String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  products      Product[]
+  articles      Article[]
+  comments      Comment[]
+  likes         Like[]
+  notifications Notification[]
 
   @@map("users")
+}
+
+enum NotificationType {
+  PRICE_CHANGE
+  NEW_COMMENT
+}
+
+model Notification {
+  id        Int              @id @default(autoincrement())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  type      NotificationType
+  message   String
+  isRead    Boolean          @default(false)
+  relatedId Int
+  createdAt DateTime         @default(now())
+
+  @@map("notifications")
 }

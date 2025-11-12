@@ -4,6 +4,9 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import path from 'path';
 import { PrismaClient } from '@prisma/client';
+import http from 'http';
+import socketService from './socket';
+import notificationsRouter from './routes/notifications.router';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,7 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // route settitng
-app.use('/api', [productRouter, articleRouter, uploadRouter, usersRouter]);
+app.use('/api', [productRouter, articleRouter, uploadRouter, usersRouter, notificationsRouter]);
 
 // Error Handler Middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
@@ -32,7 +35,10 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.status(statusCode).json({ message });
 });
 
-app.listen(PORT, () => {
+const server = http.createServer(app);
+socketService.initialize(server);
+
+server.listen(PORT, () => {
   console.log(`서버가 ${PORT}번에서 실행중입니다.`);
 });
 
