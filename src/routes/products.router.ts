@@ -2,6 +2,8 @@ import { Router } from 'express';
 import ProductsController from '../controllers/ProductsController';
 import ProductService from '../ProductService';
 import ProductRepository from '../repositories/ProductRepository';
+import LikeRepository from '../repositories/LikeRepository';
+import NotificationService from '../services/NotificationService';
 import authMiddleware from '../middlewares/auth.middleware';
 import optionalAuthMiddleware from '../middlewares/optionalAuth.middleware';
 import { validateProduct } from '../middlewares/validation.middleware';
@@ -10,7 +12,9 @@ const router = Router();
 
 // Initialize repositories and services
 const productRepository = new ProductRepository();
-const productService = new ProductService(productRepository);
+const likeRepository = new LikeRepository();
+const notificationService = new NotificationService();
+const productService = new ProductService(productRepository, likeRepository, notificationService);
 const productsController = new ProductsController(productService);
 
 // registration router

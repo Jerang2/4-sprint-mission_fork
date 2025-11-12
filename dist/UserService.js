@@ -39,7 +39,9 @@ class UserService {
                 throw new Error('비밀번호가 일치하지 않습니다.');
             }
             // Access Token 생성 (12시간)
-            const accessToken = jsonwebtoken_1.default.sign({ userId: user.id }, process.env.JWT_SECRET_KEY, { expiresIn: '12h' });
+            const accessToken = jsonwebtoken_1.default.sign({ userId: user.id }, process.env.JWT_SECRET_KEY, {
+                expiresIn: '12h',
+            });
             // Refresh Token 생성 (7일)
             const refreshToken = jsonwebtoken_1.default.sign({ userId: user.id }, process.env.REFRESH_TOKEN_SECRET_KEY, { expiresIn: '7d' });
             // Refresh Token을 해싱해서 DB에 저장

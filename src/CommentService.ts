@@ -1,5 +1,7 @@
 import { Comment as PrismaComment, Prisma } from '@prisma/client';
 import CommentRepository from './repositories/CommentRepository';
+import ArticleRepository from './repositories/ArticleRepository';
+import NotificationService from './services/NotificationService';
 
 interface CommentCreateInput {
   content: string;
@@ -13,20 +15,36 @@ interface CommentUpdateInput {
 }
 
 class CommentService {
-  private commentRepository: CommentRepository;
-
-  constructor(commentRepository: CommentRepository) {
-    this.commentRepository = commentRepository;
-  }
+  constructor(
+    private commentRepository: CommentRepository,
+    private articleRepository: ArticleRepository,
+        private notificationService: NotificationService
+  ) {}
 
   async createComment(data: CommentCreateInput): Promise<PrismaComment> {
     const { userId, productId, articleId, ...rest } = data;
-    return this.commentRepository.createComment({
+
+    const createdComment = await this.commentRepository.createComment({
       ...rest,
       user: { connect: { id: userId } },
       ...(productId && { product: { connect: { id: productId } } }),
       ...(articleId && { article: { connect: { id: articleId } } }),
     });
+
+    if (articleId) {
+      const article = await this.articleRepository.findArticleById(articleId);
+      if (article && article.userId !== userId) {
+        const message = `'${article.title}' 게시글에 새로운 댓글이 달렸습니다.`;
+        await this.notificationService.create(
+          article.userId,
+          'NEW_COMMENT',
+          message,
+          articleId
+        );
+      }
+    }
+
+    return createdComment;
   }
 
   async getCommentById(id: number): Promise<PrismaComment | null> {

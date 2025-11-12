@@ -15,7 +15,7 @@ const router = (0, express_1.Router)();
 const articleRepository = new ArticleRepository_1.default();
 const articleService = new ArticleService_1.default(articleRepository);
 const articlesController = new ArticlesController_1.default(articleService);
-//article registration 
+//article registration
 router
     .route('/articles')
     .post(auth_middleware_1.default, validation_middleware_1.validateArticle, articlesController.createArticle)
@@ -27,7 +27,7 @@ router
     .get(optionalAuth_middleware_1.default, articlesController.getArticleById)
     .patch(auth_middleware_1.default, validation_middleware_1.validateArticle, articlesController.updateArticle)
     .delete(auth_middleware_1.default, articlesController.deleteArticle);
-// article comment creation 
+// article comment creation
 router.post('/articles/:articleId/comments', auth_middleware_1.default, articlesController.createComment);
 // article comments check
 router.get('/articles/:articleId/comments', articlesController.getComments);

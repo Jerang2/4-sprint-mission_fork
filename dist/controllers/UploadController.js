@@ -23,9 +23,7 @@ class UploadController {
                 const ext = path_1.default.extname(req.file.originalname);
                 const filename = Date.now() + ext;
                 const imagePath = path_1.default.join(uploadDir, filename);
-                await (0, sharp_1.default)(req.file.buffer)
-                    .resize({ width: 500 })
-                    .toFile(imagePath);
+                await (0, sharp_1.default)(req.file.buffer).resize({ width: 500 }).toFile(imagePath);
                 const imageUrl = `/uploads/${filename}`;
                 res.status(201).json({ imageUrl: imageUrl });
             }

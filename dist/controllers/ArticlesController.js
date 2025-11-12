@@ -7,6 +7,8 @@ const CommentService_1 = __importDefault(require("../CommentService"));
 const LikeService_1 = __importDefault(require("../LikeService"));
 const CommentRepository_1 = __importDefault(require("../repositories/CommentRepository"));
 const LikeRepository_1 = __importDefault(require("../repositories/LikeRepository"));
+const ArticleRepository_1 = __importDefault(require("../repositories/ArticleRepository"));
+const NotificationService_1 = __importDefault(require("../services/NotificationService"));
 class ArticlesController {
     constructor(articleService) {
         this.createArticle = async (req, res, next) => {
@@ -50,7 +52,7 @@ class ArticlesController {
                 });
                 let responseArticles = articles;
                 if (user) {
-                    const articleIds = articles.map(article => article.id);
+                    const articleIds = articles.map((article) => article.id);
                     const likes = await this.likeService.findLikes({
                         where: {
                             userId: user.id,
@@ -58,13 +60,13 @@ class ArticlesController {
                         },
                     });
                     const likedArticleIds = new Set(likes.map((like) => like.articleId));
-                    responseArticles = articles.map(article => ({
+                    responseArticles = articles.map((article) => ({
                         ...article,
                         isLiked: likedArticleIds.has(article.id),
                     }));
                 }
                 else {
-                    responseArticles = articles.map(article => ({
+                    responseArticles = articles.map((article) => ({
                         ...article,
                         isLiked: false,
                     }));
@@ -246,7 +248,9 @@ class ArticlesController {
         };
         this.articleService = articleService;
         const commentRepository = new CommentRepository_1.default();
-        this.commentService = new CommentService_1.default(commentRepository);
+        const articleRepository = new ArticleRepository_1.default();
+        const notificationService = new NotificationService_1.default();
+        this.commentService = new CommentService_1.default(commentRepository, articleRepository, notificationService);
         const likeRepository = new LikeRepository_1.default();
         this.likeService = new LikeService_1.default(likeRepository);
     }

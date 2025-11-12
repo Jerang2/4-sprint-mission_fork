@@ -9,6 +9,9 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const path_1 = __importDefault(require("path"));
 const client_1 = require("@prisma/client");
+const http_1 = __importDefault(require("http"));
+const socket_1 = __importDefault(require("./socket"));
+const notifications_router_1 = __importDefault(require("./routes/notifications.router"));
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
 const prisma = new client_1.PrismaClient();
@@ -23,7 +26,7 @@ app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, 'uploads')));
 // route settitng
-app.use('/api', [products_router_1.default, articles_router_1.default, upload_router_1.default, users_router_1.default]);
+app.use('/api', [products_router_1.default, articles_router_1.default, upload_router_1.default, users_router_1.default, notifications_router_1.default]);
 // Error Handler Middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
@@ -31,7 +34,9 @@ app.use((err, req, res, next) => {
     const message = err.message || '오류가 발생했습니다.';
     res.status(statusCode).json({ message });
 });
-app.listen(PORT, () => {
+const server = http_1.default.createServer(app);
+socket_1.default.initialize(server);
+server.listen(PORT, () => {
     console.log(`서버가 ${PORT}번에서 실행중입니다.`);
 });
 exports.default = prisma;

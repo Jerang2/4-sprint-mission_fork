@@ -114,7 +114,9 @@ class UsersController {
                     return res.status(400).json({ message: '모든 정보를 입력해주세요.' });
                 }
                 if (newPassword !== confirmNewPassword) {
-                    return res.status(400).json({ message: '새 비밀번호와 확인 비밀번호가 일치하지 않습니다.' });
+                    return res
+                        .status(400)
+                        .json({ message: '새 비밀번호와 확인 비밀번호가 일치하지 않습니다.' });
                 }
                 const existingUser = await this.userService.getUserById(user.id);
                 if (!existingUser) {
@@ -175,7 +177,11 @@ class UsersController {
             catch (error) {
                 if (error instanceof Error) {
                     if (error.name === 'TokenExpiredError' || error.name === 'JsonWebTokenError') {
-                        return res.status(401).json({ message: 'Refresh Token이 만료되었거나 유효하지 않습니다. 다시 로그인해주세요 ' });
+                        return res
+                            .status(401)
+                            .json({
+                            message: 'Refresh Token이 만료되었거나 유효하지 않습니다. 다시 로그인해주세요 ',
+                        });
                     }
                 }
                 next(error);

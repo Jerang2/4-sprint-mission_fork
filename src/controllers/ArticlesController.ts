@@ -7,6 +7,8 @@ import CommentService from '../CommentService';
 import LikeService from '../LikeService';
 import CommentRepository from '../repositories/CommentRepository';
 import LikeRepository from '../repositories/LikeRepository';
+import ArticleRepository from '../repositories/ArticleRepository';
+import NotificationService from '../services/NotificationService';
 
 class ArticlesController {
   private articleService: ArticleService;
@@ -16,7 +18,9 @@ class ArticlesController {
   constructor(articleService: ArticleService) {
     this.articleService = articleService;
     const commentRepository = new CommentRepository();
-    this.commentService = new CommentService(commentRepository);
+    const articleRepository = new ArticleRepository();
+    const notificationService = new NotificationService();
+    this.commentService = new CommentService(commentRepository, articleRepository, notificationService);
     const likeRepository = new LikeRepository();
     this.likeService = new LikeService(likeRepository);
   }

@@ -7,6 +7,8 @@ const CommentService_1 = __importDefault(require("../CommentService"));
 const LikeService_1 = __importDefault(require("../LikeService"));
 const CommentRepository_1 = __importDefault(require("../repositories/CommentRepository"));
 const LikeRepository_1 = __importDefault(require("../repositories/LikeRepository"));
+const ArticleRepository_1 = __importDefault(require("../repositories/ArticleRepository"));
+const NotificationService_1 = __importDefault(require("../services/NotificationService"));
 class ProductsController {
     constructor(productService) {
         this.createProduct = async (req, res, next) => {
@@ -38,8 +40,7 @@ class ProductsController {
                     ? {
                         OR: [
                             { name: { contains: search, mode: 'insensitive' } },
-                            { content: { contains: search, mode: 'insensitive'
-                                } },
+                            { content: { contains: search, mode: 'insensitive' } },
                         ],
                     }
                     : {};
@@ -52,7 +53,7 @@ class ProductsController {
                 });
                 let responseProducts = products;
                 if (user) {
-                    const productIds = products.map(product => product.id);
+                    const productIds = products.map((product) => product.id);
                     const likes = await this.likeService.findLikes({
                         where: {
                             userId: user.id,
@@ -60,13 +61,13 @@ class ProductsController {
                         },
                     });
                     const likedProductIds = new Set(likes.map((like) => like.productId));
-                    responseProducts = products.map(product => ({
+                    responseProducts = products.map((product) => ({
                         ...product,
                         isLiked: likedProductIds.has(product.id),
                     }));
                 }
                 else {
-                    responseProducts = products.map(product => ({
+                    responseProducts = products.map((product) => ({
                         ...product,
                         isLiked: false,
                     }));
@@ -110,11 +111,7 @@ class ProductsController {
                 if (!product || product.userId !== user.id) {
                     return res.status(403).json({ message: '상품 수정 권한이 없습니다.' });
                 }
-                const updatedProduct = await this.productService.updateProduct(parseInt(productId), {
-                    name,
-                    description,
-                    price,
-                });
+                const updatedProduct = await this.productService.updateProduct(parseInt(productId), { name, description, price }, user.id);
                 res.status(200).json(updatedProduct);
             }
             catch (error) {
@@ -248,7 +245,9 @@ class ProductsController {
         };
         this.productService = productService;
         const commentRepository = new CommentRepository_1.default();
-        this.commentService = new CommentService_1.default(commentRepository);
+        const articleRepository = new ArticleRepository_1.default();
+        const notificationService = new NotificationService_1.default();
+        this.commentService = new CommentService_1.default(commentRepository, articleRepository, notificationService);
         const likeRepository = new LikeRepository_1.default();
         this.likeService = new LikeService_1.default(likeRepository);
     }

@@ -1,7 +1,7 @@
 import prisma from '../index';
 import { Notification, NotificationType } from '@prisma/client';
 
-class NotificationRepository {
+export default class NotificationRepository {
   async create(
     userId: number,
     type: NotificationType,
@@ -44,5 +44,3 @@ class NotificationRepository {
     });
   }
 }
-
-export default new NotificationRepository();

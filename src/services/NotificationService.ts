@@ -2,14 +2,20 @@ import NotificationRepository from '../repositories/NotificationRepository';
 import { Notification, NotificationType } from '@prisma/client';
 import socketService from '../socket';
 
-class NotificationService {
+export default class NotificationService {
+  private notificationRepository: NotificationRepository;
+
+  constructor() {
+    this.notificationRepository = new NotificationRepository();
+  }
+
   async create(
     userId: number,
     type: NotificationType,
     message: string,
     relatedId: number
   ): Promise<Notification> {
-    const notification = await NotificationRepository.create(
+    const notification = await this.notificationRepository.create(
       userId,
       type,
       message,
@@ -24,15 +30,15 @@ class NotificationService {
   }
 
   async getNotifications(userId: number): Promise<Notification[]> {
-    return NotificationRepository.findByUserId(userId);
+    return this.notificationRepository.findByUserId(userId);
   }
 
   async getUnreadCount(userId: number): Promise<number> {
-    return NotificationRepository.getUnreadCount(userId);
+    return this.notificationRepository.getUnreadCount(userId);
   }
 
   async markAsRead(notificationId: number, userId: number): Promise<Notification> {
-    const notification = await NotificationRepository.findByIdAndUserId(notificationId, userId);
+    const notification = await this.notificationRepository.findByIdAndUserId(notificationId, userId);
 
     if (!notification) {
       throw new Error('Notification not found or you do not have permission to access it.');
@@ -42,8 +48,6 @@ class NotificationService {
       return notification;
     }
 
-    return NotificationRepository.update(notificationId, { isRead: true });
+    return this.notificationRepository.update(notificationId, { isRead: true });
   }
 }
-
-export default new NotificationService();

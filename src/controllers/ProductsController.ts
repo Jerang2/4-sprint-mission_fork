@@ -7,6 +7,8 @@ import CommentService from '../CommentService';
 import LikeService from '../LikeService';
 import CommentRepository from '../repositories/CommentRepository';
 import LikeRepository from '../repositories/LikeRepository';
+import ArticleRepository from '../repositories/ArticleRepository';
+import NotificationService from '../services/NotificationService';
 
 class ProductsController {
   private productService: ProductService;
@@ -16,7 +18,9 @@ class ProductsController {
   constructor(productService: ProductService) {
     this.productService = productService;
     const commentRepository = new CommentRepository();
-    this.commentService = new CommentService(commentRepository);
+    const articleRepository = new ArticleRepository();
+    const notificationService = new NotificationService();
+    this.commentService = new CommentService(commentRepository, articleRepository, notificationService);
     const likeRepository = new LikeRepository();
     this.likeService = new LikeService(likeRepository);
   }
@@ -138,11 +142,11 @@ class ProductsController {
         return res.status(403).json({ message: '상품 수정 권한이 없습니다.' });
       }
 
-      const updatedProduct = await this.productService.updateProduct(parseInt(productId), {
-        name,
-        description,
-        price,
-      });
+      const updatedProduct = await this.productService.updateProduct(
+        parseInt(productId),
+        { name, description, price },
+        user.id
+      );
       res.status(200).json(updatedProduct);
     } catch (error) {
       next(error);

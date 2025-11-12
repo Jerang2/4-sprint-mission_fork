@@ -7,13 +7,17 @@ const express_1 = require("express");
 const ProductsController_1 = __importDefault(require("../controllers/ProductsController"));
 const ProductService_1 = __importDefault(require("../ProductService"));
 const ProductRepository_1 = __importDefault(require("../repositories/ProductRepository"));
+const LikeRepository_1 = __importDefault(require("../repositories/LikeRepository"));
+const NotificationService_1 = __importDefault(require("../services/NotificationService"));
 const auth_middleware_1 = __importDefault(require("../middlewares/auth.middleware"));
 const optionalAuth_middleware_1 = __importDefault(require("../middlewares/optionalAuth.middleware"));
 const validation_middleware_1 = require("../middlewares/validation.middleware");
 const router = (0, express_1.Router)();
 // Initialize repositories and services
 const productRepository = new ProductRepository_1.default();
-const productService = new ProductService_1.default(productRepository);
+const likeRepository = new LikeRepository_1.default();
+const notificationService = new NotificationService_1.default();
+const productService = new ProductService_1.default(productRepository, likeRepository, notificationService);
 const productsController = new ProductsController_1.default(productService);
 // registration router
 router.post('/products', auth_middleware_1.default, validation_middleware_1.validateProduct, productsController.createProduct);
